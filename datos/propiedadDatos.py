@@ -64,9 +64,8 @@ def actualizarPropiedad(propiedad: Propiedad):
     conexion = obtenerConexion()
     cursor = conexion.cursor()
 
-    sql = """UPDATE propiedades 
-             SET nombre = %s, direccion = %s, tipo = %s, observaciones = %s 
-             WHERE id_propiedad = %s"""
+    sql = """UPDATE propiedades SET nombre = %s, direccion = %s, tipo = %s, observaciones = %s WHERE id_propiedad = %s"""
+    
     valores = (
         propiedad.getNombre(),
         propiedad.getDireccion(),

@@ -3,12 +3,12 @@ from negocio import propiedadNegocio
 from negocio import estadiaNegocio
 from negocio import egresoNegocio
 from negocio import cotizacionNegocio
-from presentacion import menu
+from presentacion import interfazVisual
 
 # Guardo la cotizacion antes de cualquier operacion, en caso de no funcionar la API la agrego manualmente
 cotizacionActual = cotizacionNegocio.cargarCotizacionApi()
 if cotizacionActual is None:
-    cotizacionActual = cotizacionNegocio.crearCotizacionManual("2026-01-01", 1500)
+    cotizacionActual = cotizacionNegocio.crearCotizacionManual("2026-01-01", 1000)
 
 # Si la base de datos en MySQL todavía está vacía, insertamos los datos iniciales de prueba una sola vez
 if len(propiedadNegocio.obtenerPropiedades()) == 0:
@@ -30,5 +30,5 @@ if len(propiedadNegocio.obtenerPropiedades()) == 0:
     egresoNegocio.crearEgreso("2026-01-16", 40000, "Arreglo de plomería", propiedades[0], cotizacionActual)
     egresoNegocio.crearEgreso("2026-01-18", 20000, "Cambio de cerradura", propiedades[1], cotizacionActual)
 
-# Inicio el menú principal desde la capa de presentación
-menu.menuPrincipal(cotizacionActual)
+# Inicio la interfaz visual con Flet (para volver a consola, basta cambiarlo por menu.menuPrincipal(cotizacionActual))
+interfazVisual.iniciarInterfaz(cotizacionActual)

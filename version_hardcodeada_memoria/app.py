@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Asegura que Python use las carpetas (clases, negocio, presentacion) de esta versión en memoria
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from negocio import propietarioNegocio
 from negocio import propiedadNegocio
 from negocio import estadiaNegocio
@@ -15,13 +21,6 @@ propietarios = []  # Lista para almacenar los propietarios
 propietarios.append(propietarioNegocio.crearPropietario("Juan", "Pérez", "123456789", "juan.perez@email.com", "12345678"))
 propietarios.append(propietarioNegocio.crearPropietario("María", "Gómez", "987654321", "maria.gomez@email.com", "87654321"))
 propietarios.append(propietarioNegocio.crearPropietario("Carlos", "López", "456789123", "carlos.lopez@email.com", "45678912"))
-
-""" propiedad1 = Propiedad("Casa de Playa", "Calle 123, Ciudad", "Casa", "Hermosa casa frente al mar")
-propiedad2 = Propiedad("Departamento en la Ciudad", "Avenida Principal 456", "Departamento", "Moderno departamento en el centro")
-propiedad3 = Propiedad("Local Comercial", "Calle Comercial 789", "Local", "Ideal para negocio")
-        
-propiedades = [propiedad1, propiedad2, propiedad3] """ 
-#Cree la lista de otra forma para ver que puedo agregar tambien propiedades asi. 
 
 propiedades = []  # Lista para almacenar todas las propiedades
 propiedades.append(propiedadNegocio.crearPropiedad("Casa de Playa", "Calle 123, Ciudad", "Casa", "Hermosa casa frente al mar"))
