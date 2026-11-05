@@ -1,49 +1,81 @@
+from datos.conexion import obtenerConexion
 from clases.propietario import Propietario
-from datos import propietarioDatos
 
 
-def obtenerDatos(propietario: Propietario):
-    return {
-        "id": propietario.getId(),
-        "nombre": propietario.getNombre(),
-        "apellido": propietario.getApellido(),
-        "telefono": propietario.getTelefono(),
-        "email": propietario.getEmail(),
-        "dni": propietario.getDni(),
-        "propiedades": [str(propiedad) for propiedad in propietario.getPropiedades()]
-    }
+def insertarPropietario(propietario: Propietario):
+    conexion = obtenerConexion()
+    cursor = conexion.cursor()
 
+    sql = "INSERT INTO propietarios (nombre, apellido, telefono, email, dni) VALUES (%s, %s, %s, %s, %s)"
+    valores = (
+        propietario.getNombre(),
+        propietario.getApellido(),
+        propietario.getTelefono(),
+        propietario.getEmail(),
+        propietario.getDni()
+    )
 
-def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
-    propietario = Propietario(nombre, apellido, telefono, email, dni, propiedades)
-    idGenerado = propietarioDatos.insertarPropietario(propietario)  # guardado en MySql
-    propietario.setId(idGenerado)
-    return propietario
+    cursor.execute(sql, valores)
+    conexion.commit()  # Guardo los cambios en MySQL
+    idGenerado = cursor.lastrowid  # MySQL nos devuelve el id_propietario autoincremental que le asignó
+
+    cursor.close()
+    conexion.close()
+    return idGenerado
 
 
 def buscarPropietarioPorDni(dni):
-    # sin recorrerlo, solo lo busco en MySQL y devuelvo el objeto propietario
-    return propietarioDatos.buscarPropietarioPorDni(dni)
+    conexion = obtenerConexion()
+    cursor = conexion.cursor()
+
+    sql = "SELECT id_propietario, nombre, apellido, telefono, email, dni FROM propietarios WHERE dni = %s"
+    cursor.execute(sql, (dni,))
+    fila = cursor.fetchone()  # Trae 1 sola fila (o None si no existe)
+
+    cursor.close()
+    conexion.close()
+
+    if fila is not None:
+        # fila[0]=id, fila[1]=nombre, fila[2]=apellido, fila[3]=telefono, fila[4]=email, fila[5]=dni
+        propietario = Propietario(fila[1], fila[2], fila[3], fila[4], fila[5])
+        propietario.setId(fila[0])
+        return propietario
+    return None
 
 
-def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, telefono=None, email=None, dni=None, propiedades=None):
-    if nombre is not None:
-        propietario.setNombre(nombre)
-    if apellido is not None:
-        propietario.setApellido(apellido)
-    if telefono is not None:
-        propietario.setTelefono(telefono)
-    if email is not None:
-        propietario.setEmail(email)
-    if dni is not None:
-        propietario.setDni(dni)
-    if propiedades is not None:
-        propietario.setPropiedades(propiedades)
+def actualizarPropietario(propietario: Propietario):
+    conexion = obtenerConexion()
+    cursor = conexion.cursor()
 
-    # Guardamos los datos actualizados en MySQL
-    propietarioDatos.actualizarPropietario(propietario)
+    sql = """UPDATE propietarios 
+             SET nombre = %s, apellido = %s, telefono = %s, email = %s, dni = %s 
+             WHERE id_propietario = %s"""
+    valores = (
+        propietario.getNombre(),
+        propietario.getApellido(),
+        propietario.getTelefono(),
+        propietario.getEmail(),
+        propietario.getDni(),
+        propietario.getId()
+    )
+
+    cursor.execute(sql, valores)
+    conexion.commit()
+
+    cursor.close()
+    conexion.close()
 
 
-def eliminarPropietario(dni):
-    # Borramos directamente en MySQL por dni
-    return propietarioDatos.eliminarPropietarioPorDni(dni)
+def eliminarPropietarioPorDni(dni):
+    conexion = obtenerConexion()
+    cursor = conexion.cursor()
+
+    sql = "DELETE FROM propietarios WHERE dni = %s"
+    cursor.execute(sql, (dni,))
+    conexion.commit()
+
+    filasBorradas = cursor.rowcount  # Nos dice cuántas filas borró (1 si existía, 0 si no existía)
+
+    cursor.close()
+    conexion.close()
+    return filasBorradas > 0

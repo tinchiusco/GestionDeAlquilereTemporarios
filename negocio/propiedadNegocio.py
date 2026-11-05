@@ -1,21 +1,31 @@
 from clases.propiedad import Propiedad
+from datos import propiedadDatos
+
 
 def obtenerPropiedad(propiedad: Propiedad):
     return {
+        "id": propiedad.getId(),
         "nombre": propiedad.getNombre(),
         "direccion": propiedad.getDireccion(),
         "tipo": propiedad.getTipo(),
         "observaciones": propiedad.getObservaciones()
     }
+
+
 def crearPropiedad(nombre, direccion, tipo, observaciones):
     propiedad = Propiedad(nombre, direccion, tipo, observaciones)
+    idGenerado = propiedadDatos.insertarPropiedad(propiedad)
+    propiedad.setId(idGenerado)
     return propiedad
 
-def buscarPropiedadPorNombre(propiedades, nombre):
-    for propiedad in propiedades:
-        if propiedad.getNombre() == nombre:
-            return propiedad
-    return None
+
+def obtenerPropiedades():
+    return propiedadDatos.obtenerPropiedades()
+
+
+def buscarPropiedadPorNombre(nombre):
+    return propiedadDatos.buscarPropiedadPorNombre(nombre)
+
 
 def actualizarPropiedad(propiedad: Propiedad, nombre=None, direccion=None, tipo=None, observaciones=None):
     if nombre is not None:
@@ -26,10 +36,9 @@ def actualizarPropiedad(propiedad: Propiedad, nombre=None, direccion=None, tipo=
         propiedad.setTipo(tipo)
     if observaciones is not None:
         propiedad.setObservaciones(observaciones)
-        
-def eliminarPropiedad(propiedades, nombre):
-    propiedad = buscarPropiedadPorNombre(propiedades, nombre)
-    if propiedad is not None:
-        propiedades.remove(propiedad)
-        return True
-    return False
+
+    propiedadDatos.actualizarPropiedad(propiedad)
+
+
+def eliminarPropiedad(nombre):
+    return propiedadDatos.eliminarPropiedadPorNombre(nombre)

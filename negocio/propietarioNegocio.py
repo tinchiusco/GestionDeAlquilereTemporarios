@@ -1,24 +1,30 @@
 from clases.propietario import Propietario
 from datos import propietarioDatos
 
+
 def obtenerDatos(propietario: Propietario):
-            return {
-                "nombre": propietario.getNombre(),
-                "apellido": propietario.getApellido(),
-                "telefono": propietario.getTelefono(),
-                "email": propietario.getEmail(),
-                "dni": propietario.getDni(),
-                "propiedades": [str(propiedad) for propiedad in propietario.getPropiedades()]
-            }
+    return {
+        "id": propietario.getId(),
+        "nombre": propietario.getNombre(),
+        "apellido": propietario.getApellido(),
+        "telefono": propietario.getTelefono(),
+        "email": propietario.getEmail(),
+        "dni": propietario.getDni(),
+        "propiedades": [str(propiedad) for propiedad in propietario.getPropiedades()]
+    }
+
+
 def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
     propietario = Propietario(nombre, apellido, telefono, email, dni, propiedades)
+    idGenerado = propietarioDatos.insertarPropietario(propietario)  # guardado en MySql
+    propietario.setId(idGenerado)
     return propietario
 
-def buscarPropietarioPorDni(propietarios, dni):
-    for propietario in propietarios:
-        if propietario.getDni() == dni:
-            return propietario
-    return None
+
+def buscarPropietarioPorDni(dni):
+    # sin recorrerlo, solo lo busco en MySQL y devuelvo el objeto propietario
+    return propietarioDatos.buscarPropietarioPorDni(dni)
+
 
 def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, telefono=None, email=None, dni=None, propiedades=None):
     if nombre is not None:
@@ -33,14 +39,11 @@ def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, 
         propietario.setDni(dni)
     if propiedades is not None:
         propietario.setPropiedades(propiedades)
-        
+
+    # Guardamos los datos actualizados en MySQL
+    propietarioDatos.actualizarPropietario(propietario)
 
 
-def eliminarPropietario(propietarios, dni):
-    propietario = buscarPropietarioPorDni(propietarios, dni)
-    if propietario is not None:
-        propietarios.remove(propietario)
-        return True
-    return False #Cuando se devuelve un return la funcion ya se da por finalizada. 
-    
-
+def eliminarPropietario(dni):
+    # Borramos directamente en MySQL por dni
+    return propietarioDatos.eliminarPropietarioPorDni(dni)

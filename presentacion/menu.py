@@ -5,9 +5,12 @@ from negocio import egresoNegocio
 from negocio import liquidacionNegocio
 
 
-def menuPropietarios(propietarios, propiedades):
+def menuPropietarios():
     print("------Menu Propietarios------")
     opcionPropietario = int(input("1. Crear Propietario \n2. Actualizar Propietario \n3. Eliminar Propietario \n4. Volver al menu principal\nIngrese una opción: ").strip())
+
+    # Traemos las propiedades actuales desde MySQL
+    propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropietario == 1:
         nombre = input("Ingrese el nombre del propietario: ").strip()
@@ -24,13 +27,12 @@ def menuPropietarios(propietarios, propiedades):
         propiedadesSeleccionadas = [propiedadSeleccionada]
 
         propietario = propietarioNegocio.crearPropietario(nombre, apellido, telefono, email, dni, propiedadesSeleccionadas)
-        propietarios.append(propietario)
         print(propietarioNegocio.obtenerDatos(propietario))
 
     elif opcionPropietario == 2:
         print("\n------ Actualizar Propietario ------")
         dniBuscar = input("Ingrese el DNI del propietario a actualizar: ").strip()
-        propietario = propietarioNegocio.buscarPropietarioPorDni(propietarios, dniBuscar)
+        propietario = propietarioNegocio.buscarPropietarioPorDni(dniBuscar)
 
         if propietario is None:
             print("\n No existe un propietario con ese DNI.")
@@ -61,7 +63,7 @@ def menuPropietarios(propietarios, propiedades):
         propiedadesActualizadas = propietario.getPropiedades()  # Mantener las propiedades actuales por defecto
         if eleccion != 0:
             propiedadSeleccionada = propiedades[eleccion - 1]
-            propiedadesActualizadas.append(propiedadSeleccionada)  # Agregar la propiedad seleccionada a la lista de propiedades actualizadas
+            propiedadesActualizadas.append(propiedadSeleccionada)
 
         propietarioNegocio.actualizarPropietario(propietario, nombre, apellido, telefono, email, dni, propiedadesActualizadas)
 
@@ -72,7 +74,7 @@ def menuPropietarios(propietarios, propiedades):
     elif opcionPropietario == 3:
         print("\n------ Eliminar Propietario ------")
         dniEliminar = input("Ingrese el DNI del propietario a eliminar: ").strip()
-        if propietarioNegocio.eliminarPropietario(propietarios, dniEliminar):
+        if propietarioNegocio.eliminarPropietario(dniEliminar):
             print("Propietario eliminado correctamente.")
         else:
             print("No se encontró un propietario con ese DNI.")
@@ -84,9 +86,12 @@ def menuPropietarios(propietarios, propiedades):
         print("Opción no válida. Por favor, ingrese una opción válida.")
 
 
-def menuPropiedades(propiedades, cotizacionActual):
+def menuPropiedades(cotizacionActual):
     print("------Menu Propiedades------")
     opcionPropiedad = int(input("1. Crear Propiedad \n2. Actualizar Propiedad \n3. Eliminar Propiedad \n4. Registrar Estadía \n5. Registrar Egreso \n6. Volver al menu principal\nIngrese una opción: ").strip())
+
+    # Traemos las propiedades actuales desde MySQL
+    propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropiedad == 1:
         nombre = input("Ingrese el nombre de la propiedad: ").strip()
@@ -95,12 +100,11 @@ def menuPropiedades(propiedades, cotizacionActual):
         descripcion = input("Ingrese una descripción de la propiedad: ").strip()
 
         propiedad = propiedadNegocio.crearPropiedad(nombre, direccion, tipo, descripcion)
-        propiedades.append(propiedad)
         print(propiedadNegocio.obtenerPropiedad(propiedad))
 
     elif opcionPropiedad == 2:
         nombreActualizar = input("Ingrese el nombre de la propiedad que desea actualizar: ").strip()
-        propiedad = propiedadNegocio.buscarPropiedadPorNombre(propiedades, nombreActualizar)
+        propiedad = propiedadNegocio.buscarPropiedadPorNombre(nombreActualizar)
 
         if propiedad is None:
             print(f"No se encontró ninguna propiedad con el nombre '{nombreActualizar}'.")
@@ -118,7 +122,7 @@ def menuPropiedades(propiedades, cotizacionActual):
 
     elif opcionPropiedad == 3:
         nombreEliminar = input("Ingrese el nombre de la propiedad que desea eliminar: ").strip()
-        if propiedadNegocio.eliminarPropiedad(propiedades, nombreEliminar):
+        if propiedadNegocio.eliminarPropiedad(nombreEliminar):
             print(f"Propiedad '{nombreEliminar}' eliminada.")
         else:
             print(f"No se encontró ninguna propiedad con el nombre '{nombreEliminar}'.")
@@ -130,7 +134,7 @@ def menuPropiedades(propiedades, cotizacionActual):
         eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
         propiedadSeleccionada = propiedades[eleccion - 1]
 
-        fechaInicio = input("Fecha de ingreso (AAAA-MM-DD): ").strip()  # Aunque parezca raro, python permite poder calcular fechas sin hacer import de la libreria DateTime
+        fechaInicio = input("Fecha de ingreso (AAAA-MM-DD): ").strip()
         fechaFin = input("Fecha de salida (AAAA-MM-DD): ").strip()
         montoTotal = float(input("Monto total de la estadía (en USD): ").strip())
         plataforma = input("Plataforma (Airbnb, Booking, etc.): ").strip()
@@ -161,8 +165,9 @@ def menuPropiedades(propiedades, cotizacionActual):
         print("Opción no válida. Por favor, ingrese una opción válida.")
 
 
-def menuLiquidaciones(propiedades):
+def menuLiquidaciones():
     print("\n------ Consultar Liquidación ------")
+    propiedades = propiedadNegocio.obtenerPropiedades()
     for i, propiedad in enumerate(propiedades):
         print(f"{i + 1}. {propiedad}")
 
@@ -190,17 +195,17 @@ def menuLiquidaciones(propiedades):
     print("============================================\n")
 
 
-def menuPrincipal(propietarios, propiedades, cotizacionActual):
+def menuPrincipal(cotizacionActual):
     while True:
         print("------Sistema GAT------ \nMenu de opciones:\n1. Menu Propietarios \n2. Menu Propiedades \n3. Traer liquidaciones \n4. Salir ")
         opcionMenuPpal = int(input("Ingrese una opción: ").strip())
 
         if opcionMenuPpal == 1:
-            menuPropietarios(propietarios, propiedades)
+            menuPropietarios()
         elif opcionMenuPpal == 2:
-            menuPropiedades(propiedades, cotizacionActual)
+            menuPropiedades(cotizacionActual)
         elif opcionMenuPpal == 3:
-            menuLiquidaciones(propiedades)
+            menuLiquidaciones()
         elif opcionMenuPpal == 4:
             print("Saliendo del sistema...")
             break
