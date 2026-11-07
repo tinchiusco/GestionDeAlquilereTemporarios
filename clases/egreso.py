@@ -1,4 +1,5 @@
 class Egreso:
+    # Armo el egreso (gasto) con su fecha, monto ya pasado a USD, descripcion y propiedad
     def __init__(self, fecha, monto, descripcion, propiedad):
         self.__id = None
         self.__fecha = fecha
@@ -6,7 +7,7 @@ class Egreso:
         self.__descripcion = descripcion
         self.__propiedad = propiedad
 
-    # Setters
+    # Setters: modifico los datos del egreso
     def setId(self, idEgreso):
         self.__id = idEgreso
 
@@ -22,7 +23,7 @@ class Egreso:
     def setPropiedad(self, propiedad):
         self.__propiedad = propiedad
 
-    # Getters
+    # Getters: traigo los datos del egreso
     def getId(self):
         return self.__id
 

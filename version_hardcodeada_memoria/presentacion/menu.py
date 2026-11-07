@@ -4,6 +4,22 @@ from negocio import estadiaNegocio
 from negocio import egresoNegocio
 from negocio import liquidacionNegocio
 
+def menuPrincipal(propietarios, propiedades, cotizacionActual):
+    while True:
+        print("------Sistema GAT------ \nMenu de opciones:\n1. Menu Propietarios \n2. Menu Propiedades \n3. Traer liquidaciones \n4. Salir ")
+        opcionMenuPpal = int(input("Ingrese una opción: ").strip())
+
+        if opcionMenuPpal == 1:
+            menuPropietarios(propietarios, propiedades)
+        elif opcionMenuPpal == 2:
+            menuPropiedades(propiedades, cotizacionActual)
+        elif opcionMenuPpal == 3:
+            menuLiquidaciones(propiedades)
+        elif opcionMenuPpal == 4:
+            print("Saliendo del sistema...")
+            break
+        else:
+            print("Opción no válida. Por favor, ingrese una opción válida.")
 
 def menuPropietarios(propietarios, propiedades):
     print("------Menu Propietarios------")
@@ -190,19 +206,4 @@ def menuLiquidaciones(propiedades):
     print("============================================\n")
 
 
-def menuPrincipal(propietarios, propiedades, cotizacionActual):
-    while True:
-        print("------Sistema GAT------ \nMenu de opciones:\n1. Menu Propietarios \n2. Menu Propiedades \n3. Traer liquidaciones \n4. Salir ")
-        opcionMenuPpal = int(input("Ingrese una opción: ").strip())
 
-        if opcionMenuPpal == 1:
-            menuPropietarios(propietarios, propiedades)
-        elif opcionMenuPpal == 2:
-            menuPropiedades(propiedades, cotizacionActual)
-        elif opcionMenuPpal == 3:
-            menuLiquidaciones(propiedades)
-        elif opcionMenuPpal == 4:
-            print("Saliendo del sistema...")
-            break
-        else:
-            print("Opción no válida. Por favor, ingrese una opción válida.")

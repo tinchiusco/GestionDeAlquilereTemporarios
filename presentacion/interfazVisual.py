@@ -4,46 +4,56 @@ from negocio import propiedadNegocio
 from negocio import estadiaNegocio
 from negocio import egresoNegocio
 from negocio import liquidacionNegocio
+from negocio import validacionNegocio
 
 
 def iniciarInterfaz(cotizacionActual):
 
     def main(page: ft.Page):
-        # Configuración básica de la ventana de Windows
+        # Configuro la ventana principal de Windows
         page.title = "Sistema GAT - Gestión de Alquileres Temporarios"
         page.window.width = 850
         page.window.height = 700
         page.scroll = ft.ScrollMode.AUTO
         page.padding = 25
- 
-        # Este texto sirve para mostrar mensajes de éxito o error en pantalla (reemplaza a los print de aviso)
+
+        # Uso este texto para mostrar los avisos de exito o error arriba de cada pantalla
         txtMensaje = ft.Text(value="", size=15, weight=ft.FontWeight.BOLD)
 
-        # Contenedor principal donde vamos a ir cambiando la pantalla según el botón que toque el usuario
+        # En este contenedor voy cambiando la pantalla segun el boton del menu que toque
         contenedorPantalla = ft.Column(spacing=15)
 
-        # =====================================================================
-        # PANTALLA 1: GESTIÓN DE PROPIETARIOS (Crear, Buscar/Actualizar, Eliminar)
-        # =====================================================================
+        # Pantalla 1: Gestion de Propietarios (Crear, Buscar, Actualizar y Eliminar)
         def mostrarPantallaPropietarios(e=None):
             txtMensaje.value = ""
+            # Traigo todas las propiedades para cargarlas en el desplegable
             propiedades = propiedadNegocio.obtenerPropiedades()
 
-            # Cajas de texto (reemplazan a los input())
-            txtDni = ft.TextField(label="DNI", width=200)
+            txtDni = ft.TextField(label="DNI (7 a 9 números)", width=200)
             txtNombre = ft.TextField(label="Nombre", width=200)
             txtApellido = ft.TextField(label="Apellido", width=200)
-            txtTelefono = ft.TextField(label="Teléfono", width=200)
-            txtEmail = ft.TextField(label="Email", width=250)
+            txtTelefono = ft.TextField(label="Teléfono (solo números)", width=200)
+            txtEmail = ft.TextField(label="Email (ej. correo@mail.com)", width=250)
 
-            # Lista desplegable de propiedades
             opcionesPropiedades = [ft.dropdown.Option(p.getNombre()) for p in propiedades]
             ddPropiedad = ft.Dropdown(label="Asignar Propiedad (opcional)", width=300, options=opcionesPropiedades)
 
-            # Función del botón "Crear Propietario"
+            # Valido los campos y guardo un propietario nuevo en MySQL
             def clickCrearPropietario(e):
-                if not txtNombre.value or not txtApellido.value or not txtDni.value:
-                    txtMensaje.value = "Complete al menos Nombre, Apellido y DNI."
+                if not txtNombre.value.strip() or not txtApellido.value.strip():
+                    txtMensaje.value = "Error: Nombre y Apellido son obligatorios."
+                    page.update()
+                    return
+                if not validacionNegocio.esDniValido(txtDni.value):
+                    txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos (sin letras ni puntos)."
+                    page.update()
+                    return
+                if not validacionNegocio.esTelefonoValido(txtTelefono.value):
+                    txtMensaje.value = "Error: El teléfono debe contener solo números (mínimo 6 dígitos)."
+                    page.update()
+                    return
+                if not validacionNegocio.esEmailValido(txtEmail.value):
+                    txtMensaje.value = "Error: Ingrese un email válido (debe contener '@' y '.')."
                     page.update()
                     return
 
@@ -54,19 +64,27 @@ def iniciarInterfaz(cotizacionActual):
                         propiedadesSeleccionadas.append(prop)
 
                 propietario = propietarioNegocio.crearPropietario(
-                    txtNombre.value.strip(),
-                    txtApellido.value.strip(),
-                    txtTelefono.value.strip(),
-                    txtEmail.value.strip(),
-                    txtDni.value.strip(),
+                    txtNombre.value,
+                    txtApellido.value,
+                    txtTelefono.value,
+                    txtEmail.value,
+                    txtDni.value,
                     propiedadesSeleccionadas
                 )
-                txtMensaje.value = f"Propietario creado en MySQL: {propietarioNegocio.obtenerDatos(propietario)}"
+                if propietario is None:
+                    txtMensaje.value = "Error: Ya existe un propietario registrado con ese DNI."
+                else:
+                    txtMensaje.value = f"Propietario creado en MySQL: {propietarioNegocio.obtenerDatos(propietario)}"
                 page.update()
 
-            # Función del botón "Buscar por DNI" (para cargar sus datos en las cajas y poder actualizarlo)
+            # Traigo al propietario por su DNI y completo las cajas de texto con sus datos
             def clickBuscarPropietario(e):
-                propietario = propietarioNegocio.buscarPropietarioPorDni(txtDni.value.strip())
+                if not validacionNegocio.esDniValido(txtDni.value):
+                    txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos (sin letras)."
+                    page.update()
+                    return
+
+                propietario = propietarioNegocio.buscarPropietarioPorDni(txtDni.value)
                 if propietario is None:
                     txtMensaje.value = "No existe un propietario con ese DNI."
                 else:
@@ -74,31 +92,65 @@ def iniciarInterfaz(cotizacionActual):
                     txtApellido.value = propietario.getApellido()
                     txtTelefono.value = propietario.getTelefono()
                     txtEmail.value = propietario.getEmail()
-                    txtMensaje.value = f"Propietario encontrado (ID {propietario.getId()}). Modifique los campos y toque Actualizar."
+                    if propietario.getPropiedades():
+                        ddPropiedad.value = propietario.getPropiedades()[0].getNombre()
+                    else:
+                        ddPropiedad.value = None
+                    txtMensaje.value = f"Propietario encontrado: {propietarioNegocio.obtenerDatos(propietario)}. Modifique los campos y toque Actualizar."
                 page.update()
 
-            # Función del botón "Actualizar Propietario"
+            # Traigo al propietario por DNI y actualizo sus datos en MySQL con lo que escribi en pantalla
             def clickActualizarPropietario(e):
-                propietario = propietarioNegocio.buscarPropietarioPorDni(txtDni.value.strip())
+                if not validacionNegocio.esDniValido(txtDni.value):
+                    txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos."
+                    page.update()
+                    return
+
+                propietario = propietarioNegocio.buscarPropietarioPorDni(txtDni.value)
                 if propietario is None:
                     txtMensaje.value = "Primero busque un DNI existente para actualizar."
                     page.update()
                     return
 
+                if not txtNombre.value.strip() or not txtApellido.value.strip():
+                    txtMensaje.value = "Error: Nombre y Apellido no pueden quedar vacíos."
+                    page.update()
+                    return
+                if not validacionNegocio.esTelefonoValido(txtTelefono.value):
+                    txtMensaje.value = "Error: El teléfono debe contener solo números."
+                    page.update()
+                    return
+                if not validacionNegocio.esEmailValido(txtEmail.value):
+                    txtMensaje.value = "Error: Ingrese un email válido."
+                    page.update()
+                    return
+
+                propiedadesSeleccionadas = propietario.getPropiedades()
+                if ddPropiedad.value:
+                    prop = propiedadNegocio.buscarPropiedadPorNombre(ddPropiedad.value)
+                    if prop:
+                        propiedadesSeleccionadas = [prop]
+
                 propietarioNegocio.actualizarPropietario(
                     propietario,
-                    txtNombre.value.strip(),
-                    txtApellido.value.strip(),
-                    txtTelefono.value.strip(),
-                    txtEmail.value.strip(),
-                    txtDni.value.strip()
+                    txtNombre.value,
+                    txtApellido.value,
+                    txtTelefono.value,
+                    txtEmail.value,
+                    txtDni.value,
+                    propiedadesSeleccionadas
                 )
                 txtMensaje.value = f"Propietario actualizado correctamente en MySQL: {propietarioNegocio.obtenerDatos(propietario)}"
                 page.update()
 
-            # Función del botón "Eliminar Propietario"
+            # Elimino al propietario de MySQL usando su DNI y limpio los campos
             def clickEliminarPropietario(e):
-                if propietarioNegocio.eliminarPropietario(txtDni.value.strip()):
+                if not validacionNegocio.esDniValido(txtDni.value):
+                    txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos."
+                    page.update()
+                    return
+
+                if propietarioNegocio.eliminarPropietario(txtDni.value):
                     txtMensaje.value = "Propietario eliminado correctamente de MySQL."
                     txtNombre.value = ""
                     txtApellido.value = ""
@@ -108,7 +160,6 @@ def iniciarInterfaz(cotizacionActual):
                     txtMensaje.value = "No se encontró un propietario con ese DNI."
                 page.update()
 
-            # Armamos la vista en el contenedor
             contenedorPantalla.controls = [
                 ft.Text("Menú Propietarios", size=22, weight=ft.FontWeight.BOLD),
                 ft.Text("Ingrese el DNI para buscar/eliminar, o complete los datos para crear uno nuevo:"),
@@ -124,32 +175,46 @@ def iniciarInterfaz(cotizacionActual):
             ]
             page.update()
 
-        # =====================================================================
-        # PANTALLA 2: PROPIEDADES, ESTADÍAS Y EGRESOS
-        # =====================================================================
+        # Pantalla 2: Gestion de Propiedades, registro de Estadias y registro de Egresos
         def mostrarPantallaPropiedades(e=None):
             txtMensaje.value = ""
+            # Traigo todas las propiedades desde MySQL para los desplegables de estadias y egresos
             propiedades = propiedadNegocio.obtenerPropiedades()
             opcionesPropiedades = [ft.dropdown.Option(p.getNombre()) for p in propiedades]
 
-            # --- Controles para Propiedad (Crear / Buscar / Actualizar / Eliminar) ---
             txtNombreProp = ft.TextField(label="Nombre de la Propiedad", width=250)
             txtDireccionProp = ft.TextField(label="Dirección", width=250)
             txtTipoProp = ft.TextField(label="Tipo (Casa, Depto, Local)", width=200)
             txtObsProp = ft.TextField(label="Observaciones", width=300)
 
+            # Guardo una propiedad nueva en MySQL y recargo los desplegables
             def clickCrearPropiedad(e):
+                if not txtNombreProp.value.strip() or not txtDireccionProp.value.strip():
+                    txtMensaje.value = "Error: El nombre y la dirección de la propiedad son obligatorios."
+                    page.update()
+                    return
+
                 prop = propiedadNegocio.crearPropiedad(
-                    txtNombreProp.value.strip(),
-                    txtDireccionProp.value.strip(),
-                    txtTipoProp.value.strip(),
-                    txtObsProp.value.strip()
+                    txtNombreProp.value,
+                    txtDireccionProp.value,
+                    txtTipoProp.value,
+                    txtObsProp.value
                 )
-                mostrarPantallaPropiedades()  # Recarga el desplegable con la nueva propiedad
+                if prop is None:
+                    txtMensaje.value = "Error: Ya existe una propiedad con ese nombre en MySQL."
+                    page.update()
+                    return
+
+                mostrarPantallaPropiedades()
                 txtMensaje.value = f"Propiedad creada en MySQL: {propiedadNegocio.obtenerPropiedad(prop)}"
                 page.update()
 
+            # Traigo una propiedad buscando por su nombre y lleno los campos en pantalla
             def clickBuscarPropiedad(e):
+                if not txtNombreProp.value.strip():
+                    txtMensaje.value = "Error: Ingrese el nombre de la propiedad a buscar."
+                    page.update()
+                    return
                 prop = propiedadNegocio.buscarPropiedadPorNombre(txtNombreProp.value.strip())
                 if prop is None:
                     txtMensaje.value = "No se encontró una propiedad con ese nombre."
@@ -160,10 +225,15 @@ def iniciarInterfaz(cotizacionActual):
                     txtMensaje.value = "Propiedad encontrada. Puede modificar sus datos y tocar Actualizar."
                 page.update()
 
+            # Actualizo en MySQL los datos de la propiedad que busque por nombre
             def clickActualizarPropiedad(e):
                 prop = propiedadNegocio.buscarPropiedadPorNombre(txtNombreProp.value.strip())
                 if prop is None:
                     txtMensaje.value = "No existe una propiedad con ese nombre para actualizar."
+                    page.update()
+                    return
+                if not txtDireccionProp.value.strip():
+                    txtMensaje.value = "Error: La dirección no puede quedar vacía."
                     page.update()
                     return
                 propiedadNegocio.actualizarPropiedad(
@@ -176,8 +246,13 @@ def iniciarInterfaz(cotizacionActual):
                 txtMensaje.value = f"Propiedad actualizada: {propiedadNegocio.obtenerPropiedad(prop)}"
                 page.update()
 
+            # Elimino la propiedad de MySQL buscando por su nombre
             def clickEliminarPropiedad(e):
                 nombre = txtNombreProp.value.strip()
+                if not nombre:
+                    txtMensaje.value = "Error: Ingrese el nombre de la propiedad a eliminar."
+                    page.update()
+                    return
                 if propiedadNegocio.eliminarPropiedad(nombre):
                     mostrarPantallaPropiedades()
                     txtMensaje.value = f"Propiedad '{nombre}' eliminada de MySQL."
@@ -185,7 +260,7 @@ def iniciarInterfaz(cotizacionActual):
                     txtMensaje.value = f"No se encontró la propiedad '{nombre}'."
                 page.update()
 
-            # --- Controles para Registrar Estadía ---
+            # Controles y funcion para guardar una estadia en USD asociada a la propiedad elegida
             ddPropEstadia = ft.Dropdown(label="Propiedad", width=250, options=opcionesPropiedades)
             txtFechaInicio = ft.TextField(label="Ingreso (AAAA-MM-DD)", width=180)
             txtFechaFin = ft.TextField(label="Salida (AAAA-MM-DD)", width=180)
@@ -193,41 +268,81 @@ def iniciarInterfaz(cotizacionActual):
             txtPlataforma = ft.TextField(label="Plataforma (Airbnb/Booking)", width=200)
 
             def clickRegistrarEstadia(e):
-                prop = propiedadNegocio.buscarPropiedadPorNombre(ddPropEstadia.value)
-                if prop is None:
-                    txtMensaje.value = "Seleccione una propiedad para la estadía."
+                if not ddPropEstadia.value:
+                    txtMensaje.value = "Error: Seleccione una propiedad para la estadía."
                     page.update()
                     return
+                if not validacionNegocio.esFechaValida(txtFechaInicio.value):
+                    txtMensaje.value = "Error: La fecha de ingreso no es una fecha real válida (use formato AAAA-MM-DD, ej. 2026-09-09)."
+                    page.update()
+                    return
+                if not validacionNegocio.esFechaValida(txtFechaFin.value):
+                    txtMensaje.value = "Error: La fecha de salida no es una fecha real válida (use formato AAAA-MM-DD, ej. 2026-09-15)."
+                    page.update()
+                    return
+                if not validacionNegocio.esRangoFechasValido(txtFechaInicio.value, txtFechaFin.value):
+                    txtMensaje.value = "Error: La fecha de salida no puede ser anterior a la fecha de ingreso."
+                    page.update()
+                    return
+                if not validacionNegocio.esMontoValido(txtMontoUsd.value):
+                    txtMensaje.value = "Error: El monto total debe ser un número positivo válido (sin letras)."
+                    page.update()
+                    return
+                if not txtPlataforma.value.strip():
+                    txtMensaje.value = "Error: Ingrese la plataforma (ej. Airbnb, Booking)."
+                    page.update()
+                    return
+
+                prop = propiedadNegocio.buscarPropiedadPorNombre(ddPropEstadia.value)
                 estadia = estadiaNegocio.crearEstadia(
-                    txtFechaInicio.value.strip(),
-                    txtFechaFin.value.strip(),
-                    float(txtMontoUsd.value.strip()),
-                    txtPlataforma.value.strip(),
+                    txtFechaInicio.value,
+                    txtFechaFin.value,
+                    txtMontoUsd.value,
+                    txtPlataforma.value,
                     prop
                 )
-                txtMensaje.value = f"Estadía registrada en MySQL: {estadiaNegocio.obtenerDatos(estadia)}"
+                if estadia is None:
+                    txtMensaje.value = "Error: Datos inválidos, no se guardó la estadía."
+                else:
+                    txtMensaje.value = f"Estadía registrada en MySQL: {estadiaNegocio.obtenerDatos(estadia)}"
                 page.update()
 
-            # --- Controles para Registrar Egreso ---
+            # Controles y funcion para guardar un egreso en pesos ARS (se pasa a USD con la cotizacion del dia)
             ddPropEgreso = ft.Dropdown(label="Propiedad", width=250, options=opcionesPropiedades)
             txtFechaEgreso = ft.TextField(label="Fecha (AAAA-MM-DD)", width=180)
             txtMontoPesos = ft.TextField(label="Monto (Pesos ARS)", width=160)
             txtDescEgreso = ft.TextField(label="Descripción (Plomería, etc.)", width=250)
 
             def clickRegistrarEgreso(e):
-                prop = propiedadNegocio.buscarPropiedadPorNombre(ddPropEgreso.value)
-                if prop is None:
-                    txtMensaje.value = "Seleccione una propiedad para el egreso."
+                if not ddPropEgreso.value:
+                    txtMensaje.value = "Error: Seleccione una propiedad para el egreso."
                     page.update()
                     return
+                if not validacionNegocio.esFechaValida(txtFechaEgreso.value):
+                    txtMensaje.value = "Error: La fecha del gasto no es una fecha real válida (use formato AAAA-MM-DD)."
+                    page.update()
+                    return
+                if not validacionNegocio.esMontoValido(txtMontoPesos.value):
+                    txtMensaje.value = "Error: El monto del gasto debe ser un número positivo válido (sin letras)."
+                    page.update()
+                    return
+                if not txtDescEgreso.value.strip():
+                    txtMensaje.value = "Error: Ingrese una descripción para el gasto."
+                    page.update()
+                    return
+
+                prop = propiedadNegocio.buscarPropiedadPorNombre(ddPropEgreso.value)
                 egreso = egresoNegocio.crearEgreso(
-                    txtFechaEgreso.value.strip(),
-                    float(txtMontoPesos.value.strip()),
-                    txtDescEgreso.value.strip(),
+                    txtFechaEgreso.value,
+                    txtMontoPesos.value,
+                    txtDescEgreso.value,
                     prop,
                     cotizacionActual
                 )
-                txtMensaje.value = f"Egreso convertido a USD (Cotización ${cotizacionActual.getValor()}) y guardado: {egresoNegocio.obtenerDatos(egreso)}"
+                if egreso is None:
+                    txtMensaje.value = "Error: Datos inválidos, no se guardó el egreso."
+                else:
+                    txtMensaje.value = f"Egreso convertido a USD (Cotización ${cotizacionActual.getValor()}) y guardado: {egresoNegocio.obtenerDatos(egreso)}"
                 page.update()
 
             contenedorPantalla.controls = [
@@ -250,11 +365,10 @@ def iniciarInterfaz(cotizacionActual):
             ]
             page.update()
 
-        # =====================================================================
-        # PANTALLA 3: CONSULTAR LIQUIDACIÓN
-        # =====================================================================
+        # Pantalla 3: Consultar Liquidacion de una propiedad en un rango de fechas
         def mostrarPantallaLiquidaciones(e=None):
             txtMensaje.value = ""
+            # Traigo todas las propiedades para elegir cual quiero liquidar
             propiedades = propiedadNegocio.obtenerPropiedades()
             opcionesPropiedades = [ft.dropdown.Option(p.getNombre()) for p in propiedades]
 
@@ -263,9 +377,23 @@ def iniciarInterfaz(cotizacionActual):
             txtHasta = ft.TextField(label="Fecha Hasta (AAAA-MM-DD)", value="2026-01-31", width=200)
             txtResultadoLiquidacion = ft.Text(value="", size=16, selectable=True)
 
+            # Traigo las estadias y egresos del periodo y calculo el resumen de liquidacion
             def clickCalcularLiquidacion(e):
+                txtResultadoLiquidacion.value = ""
                 if not ddPropLiquidacion.value:
-                    txtMensaje.value = "Seleccione una propiedad de la lista."
+                    txtMensaje.value = "Error: Seleccione una propiedad de la lista."
+                    page.update()
+                    return
+                if not validacionNegocio.esFechaValida(txtDesde.value):
+                    txtMensaje.value = "Error: La 'Fecha Desde' no es una fecha real válida (use AAAA-MM-DD)."
+                    page.update()
+                    return
+                if not validacionNegocio.esFechaValida(txtHasta.value):
+                    txtMensaje.value = "Error: La 'Fecha Hasta' no es una fecha real válida (use AAAA-MM-DD)."
+                    page.update()
+                    return
+                if not validacionNegocio.esRangoFechasValido(txtDesde.value, txtHasta.value):
+                    txtMensaje.value = "Error: La 'Fecha Hasta' no puede ser anterior a la 'Fecha Desde'."
                     page.update()
                     return
 
@@ -304,9 +432,7 @@ def iniciarInterfaz(cotizacionActual):
             ]
             page.update()
 
-        # =====================================================================
-        # BARRA DE NAVEGACIÓN SUPERIOR (Reemplaza al Menú Principal 1, 2, 3)
-        # =====================================================================
+        # Armo la barra de navegacion superior con los 3 botones del menu principal
         barraMenuPrincipal = ft.Row(
             controls=[
                 ft.Button(content="1. Menú Propietarios", on_click=mostrarPantallaPropietarios),
@@ -316,16 +442,17 @@ def iniciarInterfaz(cotizacionActual):
             spacing=15
         )
 
-        # Agregamos a la ventana el título, los 3 botones de menú, el área de pantalla y el texto de avisos
+        # Agrego a la ventana el titulo, la cotizacion del dolar del dia, los botones del menu y el contenedor de pantallas
         page.add(
             ft.Text("Sistema GAT - Gestión de Alquileres Temporarios", size=26, weight=ft.FontWeight.BOLD),
+            ft.Text(f"Cotización Dólar Oficial: ${cotizacionActual.getValor()} ARS (Fecha: {str(cotizacionActual.getFecha())[:10]})", size=16),
             barraMenuPrincipal,
             ft.Divider(),
             txtMensaje,
             contenedorPantalla
         )
 
-        # Al abrir la ventana por primera vez, mostramos la pantalla de Liquidaciones
+        # Cuando abre la app por primera vez, muestro directamente la pantalla de Liquidaciones
         mostrarPantallaLiquidaciones()
 
     ft.run(main)

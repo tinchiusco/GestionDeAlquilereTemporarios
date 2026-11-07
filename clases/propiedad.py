@@ -1,14 +1,15 @@
 class Propiedad:
+    # Armo la propiedad con sus datos y listas vacias para ir guardando sus estadias y egresos
     def __init__(self, nombre, direccion, tipo, observaciones):
         self.__id = None
         self.__nombre = nombre
         self.__direccion = direccion
-        self.__tipo = tipo
-        self.__observaciones = observaciones
-        self.__estadias = []  # Lista de estadías
-        self.__egresos = []   # Lista de egresos
+        self.__tipo = tipo if tipo else "n/a"
+        self.__observaciones = observaciones if observaciones else "n/a"
+        self.__estadias = []
+        self.__egresos = []
 
-    # Getters and Setters
+    # Setters: modifico los atributos y agrego estadias o egresos a la propiedad
     def setId(self, id):
         self.__id = id
 
@@ -36,6 +37,7 @@ class Propiedad:
     def setEgreso(self, egreso):
         self.__egresos.append(egreso)
 
+    # Getters: traigo los datos de la propiedad, sus estadias y sus egresos
     def getId(self):
         return self.__id
 

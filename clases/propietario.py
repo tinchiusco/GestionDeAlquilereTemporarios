@@ -2,19 +2,20 @@ from clases.propiedad import Propiedad
 
 
 class Propietario:
+    # Armo el constructor del propietario; el ID arranca en None porque lo asigna MySQL con AutoIncrement
     def __init__(self, nombre, apellido, telefono, email, dni, propiedades=None):
-        self.__id = None  # Inicializo el ID como None, ya que se asigna con AutoIncrement en la base de datos
+        self.__id = None
         self.__nombre = nombre
         self.__apellido = apellido
         self.__telefono = telefono
         self.__email = email
         self.__dni = dni
         if propiedades is None:
-            self.__propiedades = []  # Si no se pasa ninguna propiedad, se inicializa como una lista vacía
+            self.__propiedades = []  # Si no me pasan propiedades, arranco con una lista vacia
         else:
-            self.__propiedades = propiedades  # Si se pasa una propiedad, se inicializa con esa propiedad
+            self.__propiedades = propiedades
 
-    # Getters and Setters
+    # Setters: modifico los datos del propietario
     def setId(self, idPropietario):
         self.__id = idPropietario
 
@@ -36,6 +37,7 @@ class Propietario:
     def setPropiedades(self, propiedades):
         self.__propiedades = propiedades
 
+    # Getters: traigo los datos del propietario
     def getId(self):
         return self.__id
 

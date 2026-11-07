@@ -1,4 +1,5 @@
 class Estadia:
+    # Armo la estadia vinculada a una propiedad, con sus fechas, monto en USD y plataforma
     def __init__(self, fecha_inicio, fecha_fin, monto_total, plataforma, propiedad):
         self.__id = None
         self.__fecha_inicio = fecha_inicio
@@ -7,7 +8,7 @@ class Estadia:
         self.__plataforma = plataforma
         self.__propiedad = propiedad
 
-    # Setters
+    # Setters: modifico los datos de la estadia
     def setId(self, idEstadia):
         self.__id = idEstadia
 
@@ -26,7 +27,7 @@ class Estadia:
     def setPropiedad(self, propiedad):
         self.__propiedad = propiedad
 
-    # Getters
+    # Getters: traigo los datos de la estadia
     def getId(self):
         return self.__id
 

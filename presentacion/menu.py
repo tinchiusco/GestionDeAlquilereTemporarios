@@ -5,11 +5,12 @@ from negocio import egresoNegocio
 from negocio import liquidacionNegocio
 
 
+# Menu por consola para crear, actualizar o eliminar propietarios
 def menuPropietarios():
     print("------Menu Propietarios------")
     opcionPropietario = int(input("1. Crear Propietario \n2. Actualizar Propietario \n3. Eliminar Propietario \n4. Volver al menu principal\nIngrese una opción: ").strip())
 
-    # Traemos las propiedades actuales desde MySQL
+    # Traigo todas las propiedades desde MySQL
     propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropietario == 1:
@@ -32,6 +33,7 @@ def menuPropietarios():
     elif opcionPropietario == 2:
         print("\n------ Actualizar Propietario ------")
         dniBuscar = input("Ingrese el DNI del propietario a actualizar: ").strip()
+        # Traigo el propietario desde MySQL buscando por su DNI
         propietario = propietarioNegocio.buscarPropietarioPorDni(dniBuscar)
 
         if propietario is None:
@@ -60,7 +62,7 @@ def menuPropietarios():
 
         eleccion = int(input("\nSeleccione una propiedad (0 para mantener la actual): ").strip() or 0)
 
-        propiedadesActualizadas = propietario.getPropiedades()  # Mantener las propiedades actuales por defecto
+        propiedadesActualizadas = propietario.getPropiedades()
         if eleccion != 0:
             propiedadSeleccionada = propiedades[eleccion - 1]
             propiedadesActualizadas.append(propiedadSeleccionada)
@@ -80,17 +82,18 @@ def menuPropietarios():
             print("No se encontró un propietario con ese DNI.")
 
     elif opcionPropietario == 4:
-        return  # Volver al menú principal
+        return
 
     else:
         print("Opción no válida. Por favor, ingrese una opción válida.")
 
 
+# Menu por consola para gestionar propiedades y registrar estadias o egresos
 def menuPropiedades(cotizacionActual):
     print("------Menu Propiedades------")
     opcionPropiedad = int(input("1. Crear Propiedad \n2. Actualizar Propiedad \n3. Eliminar Propiedad \n4. Registrar Estadía \n5. Registrar Egreso \n6. Volver al menu principal\nIngrese una opción: ").strip())
 
-    # Traemos las propiedades actuales desde MySQL
+    # Traigo todas las propiedades desde MySQL
     propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropiedad == 1:
@@ -159,14 +162,16 @@ def menuPropiedades(cotizacionActual):
         print(egresoNegocio.obtenerDatos(egreso))
 
     elif opcionPropiedad == 6:
-        return  # Volver al menú principal
+        return
 
     else:
         print("Opción no válida. Por favor, ingrese una opción válida.")
 
 
+# Menu por consola para calcular y mostrar la liquidacion de una propiedad
 def menuLiquidaciones():
     print("\n------ Consultar Liquidación ------")
+    # Traigo todas las propiedades para elegir cual liquidar
     propiedades = propiedadNegocio.obtenerPropiedades()
     for i, propiedad in enumerate(propiedades):
         print(f"{i + 1}. {propiedad}")
@@ -195,6 +200,7 @@ def menuLiquidaciones():
     print("============================================\n")
 
 
+# Bucle del menu principal en consola
 def menuPrincipal(cotizacionActual):
     while True:
         print("------Sistema GAT------ \nMenu de opciones:\n1. Menu Propietarios \n2. Menu Propiedades \n3. Traer liquidaciones \n4. Salir ")
