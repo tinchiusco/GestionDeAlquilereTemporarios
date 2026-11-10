@@ -11,7 +11,7 @@ def obtenerPropiedad(propiedad: Propiedad):
     )
 
 
-# Valido que tenga nombre y direccion, que no este repetida y guardo la propiedad en MySQL
+# Valido que tenga nombre y direccion, que no este repetida y guardo la propiedad en mysql
 def crearPropiedad(nombre, direccion, tipo, observaciones):
     if not nombre or nombre.strip() == "" or not direccion or direccion.strip() == "":
         return None
@@ -27,7 +27,7 @@ def crearPropiedad(nombre, direccion, tipo, observaciones):
     return propiedad
 
 
-# Traigo todas las propiedades guardadas en MySQL
+# Traigo todas las propiedades guardadas en mysql
 def obtenerPropiedades():
     return propiedadDatos.obtenerPropiedades()
 
@@ -37,7 +37,7 @@ def buscarPropiedadPorNombre(nombre):
     return propiedadDatos.buscarPropiedadPorNombre(nombre)
 
 
-# Modifico los datos de la propiedad y los actualizo en MySQL
+# Modifico los datos de la propiedad y los actualizo en mysql
 def actualizarPropiedad(propiedad: Propiedad, nombre=None, direccion=None, tipo=None, observaciones=None):
     if nombre is not None:
         propiedad.setNombre(nombre)
@@ -51,6 +51,6 @@ def actualizarPropiedad(propiedad: Propiedad, nombre=None, direccion=None, tipo=
     propiedadDatos.actualizarPropiedad(propiedad)
 
 
-# Elimino la propiedad de MySQL buscando por su nombre
+# Elimino la propiedad de mysql buscando por su nombre
 def eliminarPropiedad(nombre):
     return propiedadDatos.eliminarPropiedadPorNombre(nombre)

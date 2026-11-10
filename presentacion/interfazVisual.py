@@ -38,7 +38,7 @@ def iniciarInterfaz(cotizacionActual):
             opcionesPropiedades = [ft.dropdown.Option(p.getNombre()) for p in propiedades]
             ddPropiedad = ft.Dropdown(label="Asignar Propiedad (opcional)", width=300, options=opcionesPropiedades)
 
-            # Valido los campos y guardo un propietario nuevo en MySQL
+            # Valido los campos y guardo un propietario nuevo en mysql
             def clickCrearPropietario(e):
                 if not txtNombre.value.strip() or not txtApellido.value.strip():
                     txtMensaje.value = "Error: Nombre y Apellido son obligatorios."
@@ -99,7 +99,7 @@ def iniciarInterfaz(cotizacionActual):
                     txtMensaje.value = f"Propietario encontrado: {propietarioNegocio.obtenerDatos(propietario)}. Modifique los campos y toque Actualizar."
                 page.update()
 
-            # Traigo al propietario por DNI y actualizo sus datos en MySQL con lo que escribi en pantalla
+            # Traigo al propietario por DNI y actualizo sus datos en mysql con lo que escribi en pantalla
             def clickActualizarPropietario(e):
                 if not validacionNegocio.esDniValido(txtDni.value):
                     txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos."
@@ -143,7 +143,7 @@ def iniciarInterfaz(cotizacionActual):
                 txtMensaje.value = f"Propietario actualizado correctamente en MySQL: {propietarioNegocio.obtenerDatos(propietario)}"
                 page.update()
 
-            # Elimino al propietario de MySQL usando su DNI y limpio los campos
+            # Elimino al propietario de mysql usando su DNI y limpio los campos
             def clickEliminarPropietario(e):
                 if not validacionNegocio.esDniValido(txtDni.value):
                     txtMensaje.value = "Error: El DNI debe tener entre 7 y 9 dígitos numéricos."
@@ -178,7 +178,7 @@ def iniciarInterfaz(cotizacionActual):
         # Pantalla 2: Gestion de Propiedades, registro de Estadias y registro de Egresos
         def mostrarPantallaPropiedades(e=None):
             txtMensaje.value = ""
-            # Traigo todas las propiedades desde MySQL para los desplegables de estadias y egresos
+            # Traigo todas las propiedades desde mysql para los desplegables de estadias y egresos
             propiedades = propiedadNegocio.obtenerPropiedades()
             opcionesPropiedades = [ft.dropdown.Option(p.getNombre()) for p in propiedades]
 
@@ -187,7 +187,7 @@ def iniciarInterfaz(cotizacionActual):
             txtTipoProp = ft.TextField(label="Tipo (Casa, Depto, Local)", width=200)
             txtObsProp = ft.TextField(label="Observaciones", width=300)
 
-            # Guardo una propiedad nueva en MySQL y recargo los desplegables
+            # Guardo una propiedad nueva en mysql y recargo los desplegables
             def clickCrearPropiedad(e):
                 if not txtNombreProp.value.strip() or not txtDireccionProp.value.strip():
                     txtMensaje.value = "Error: El nombre y la dirección de la propiedad son obligatorios."
@@ -225,7 +225,7 @@ def iniciarInterfaz(cotizacionActual):
                     txtMensaje.value = "Propiedad encontrada. Puede modificar sus datos y tocar Actualizar."
                 page.update()
 
-            # Actualizo en MySQL los datos de la propiedad que busque por nombre
+            # Actualizo en mysql los datos de la propiedad que busque por nombre
             def clickActualizarPropiedad(e):
                 prop = propiedadNegocio.buscarPropiedadPorNombre(txtNombreProp.value.strip())
                 if prop is None:
@@ -246,7 +246,7 @@ def iniciarInterfaz(cotizacionActual):
                 txtMensaje.value = f"Propiedad actualizada: {propiedadNegocio.obtenerPropiedad(prop)}"
                 page.update()
 
-            # Elimino la propiedad de MySQL buscando por su nombre
+            # Elimino la propiedad de mysql buscando por su nombre
             def clickEliminarPropiedad(e):
                 nombre = txtNombreProp.value.strip()
                 if not nombre:

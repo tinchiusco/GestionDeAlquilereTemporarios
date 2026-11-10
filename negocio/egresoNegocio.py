@@ -13,7 +13,7 @@ def obtenerDatos(egreso: Egreso):
     )
 
 
-# Recibo el gasto en pesos ARS, lo paso a USD con la cotizacion del dia y lo guardo en MySQL
+# Recibo el gasto en pesos ARS, lo paso a USD con la cotizacion del dia y lo guardo en mysql
 def crearEgreso(fecha, montoPesos, descripcion, propiedad, cotizacion):
     if not validacionNegocio.esFechaValida(fecha):
         return None
@@ -31,6 +31,6 @@ def crearEgreso(fecha, montoPesos, descripcion, propiedad, cotizacion):
     return egreso
 
 
-# Traigo todos los egresos asociados a una propiedad desde MySQL
+# Traigo todos los egresos asociados a una propiedad desde mysql
 def obtenerEgresosPorPropiedad(propiedad):
     return egresoDatos.obtenerEgresosPorPropiedad(propiedad)

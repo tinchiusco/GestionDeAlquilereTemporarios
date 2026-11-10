@@ -2,7 +2,7 @@ from clases.propiedad import Propiedad
 
 
 class Propietario:
-    # Armo el constructor del propietario; el ID arranca en None porque lo asigna MySQL con AutoIncrement
+    # Armo el constructor del propietario; el ID arranca en None porque lo asigna mysql con AutoIncrement
     def __init__(self, nombre, apellido, telefono, email, dni, propiedades=None):
         self.__id = None
         self.__nombre = nombre

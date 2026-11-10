@@ -10,7 +10,7 @@ def menuPropietarios():
     print("------Menu Propietarios------")
     opcionPropietario = int(input("1. Crear Propietario \n2. Actualizar Propietario \n3. Eliminar Propietario \n4. Volver al menu principal\nIngrese una opción: ").strip())
 
-    # Traigo todas las propiedades desde MySQL
+    # Traigo todas las propiedades desde mysql
     propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropietario == 1:
@@ -33,7 +33,7 @@ def menuPropietarios():
     elif opcionPropietario == 2:
         print("\n------ Actualizar Propietario ------")
         dniBuscar = input("Ingrese el DNI del propietario a actualizar: ").strip()
-        # Traigo el propietario desde MySQL buscando por su DNI
+        # Traigo el propietario desde mysql buscando por su DNI
         propietario = propietarioNegocio.buscarPropietarioPorDni(dniBuscar)
 
         if propietario is None:
@@ -93,7 +93,7 @@ def menuPropiedades(cotizacionActual):
     print("------Menu Propiedades------")
     opcionPropiedad = int(input("1. Crear Propiedad \n2. Actualizar Propiedad \n3. Eliminar Propiedad \n4. Registrar Estadía \n5. Registrar Egreso \n6. Volver al menu principal\nIngrese una opción: ").strip())
 
-    # Traigo todas las propiedades desde MySQL
+    # Traigo todas las propiedades desde mysql
     propiedades = propiedadNegocio.obtenerPropiedades()
 
     if opcionPropiedad == 1:

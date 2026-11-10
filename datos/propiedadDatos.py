@@ -2,7 +2,7 @@ from datos.conexion import obtenerConexion
 from clases.propiedad import Propiedad
 
 
-# Guardo una propiedad nueva en MySQL y devuelvo el ID que le asigno la base
+# Guardo una propiedad nueva en mysql y devuelvo el ID que le asigno la base
 def insertarPropiedad(propiedad: Propiedad):
     try:
         conexion = obtenerConexion()
@@ -28,7 +28,7 @@ def insertarPropiedad(propiedad: Propiedad):
         return None
 
 
-# Traigo todas las propiedades cargadas en MySQL y las convierto en objetos Propiedad
+# Traigo todas las propiedades cargadas en mysql y las convierto en objetos Propiedad
 def obtenerPropiedades():
     try:
         conexion = obtenerConexion()
@@ -52,7 +52,7 @@ def obtenerPropiedades():
         return []
 
 
-# Traigo una propiedad especifica buscando por su nombre en MySQL
+# Traigo una propiedad especifica buscando por su nombre en mysql
 def buscarPropiedadPorNombre(nombre):
     try:
         conexion = obtenerConexion()
@@ -75,7 +75,7 @@ def buscarPropiedadPorNombre(nombre):
         return None
 
 
-# Actualizo los datos de la propiedad en MySQL usando su id_propiedad
+# Actualizo los datos de la propiedad en mysql usando su id_propiedad
 def actualizarPropiedad(propiedad: Propiedad):
     try:
         conexion = obtenerConexion()
@@ -100,7 +100,7 @@ def actualizarPropiedad(propiedad: Propiedad):
         print(f"Error al actualizar propiedad en MySQL: {error}")
 
 
-# Elimino una propiedad de MySQL por su nombre (sus estadias y egresos se borran solos por ON DELETE CASCADE)
+# Elimino una propiedad de mysql por su nombre (sus estadias y egresos se borran solos por ON DELETE CASCADE)
 def eliminarPropiedadPorNombre(nombre):
     try:
         conexion = obtenerConexion()

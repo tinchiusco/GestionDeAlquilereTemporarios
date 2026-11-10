@@ -2,8 +2,8 @@ from datos.conexion import obtenerConexion
 from clases.egreso import Egreso
 
 
-# Guardo un egreso nuevo (ya convertido a USD) en MySQL vinculado al id_propiedad
-def insertarEgreso(egreso: Egreso):
+# Guardo un egreso nuevo (ya convertido a USD) en mysql vinculado al id_propiedad
+def insertarEgreso(egreso:Egreso):
     try:
         conexion = obtenerConexion()
         cursor = conexion.cursor()
@@ -28,7 +28,7 @@ def insertarEgreso(egreso: Egreso):
         return None
 
 
-# Traigo todos los egresos de una propiedad desde MySQL para descontarlos en la liquidacion
+# Traigo todos los egresos de una propiedad desde mysql para descontarlos en la liquidacion
 def obtenerEgresosPorPropiedad(propiedad):
     try:
         conexion = obtenerConexion()
@@ -44,7 +44,7 @@ def obtenerEgresosPorPropiedad(propiedad):
         egresos = []
         for fila in filas:
             egreso = Egreso(str(fila[1]), float(fila[2]), fila[3], propiedad)  # Convierto la fecha DATE a texto con str() y el DECIMAL a float()
-            egreso.setId(fila[0])  # Asigno el id_egreso que me devolvio MySQL al crear el egreso, esta estuvo dificil de entender
+            egreso.setId(fila[0])  # Asigno el id_egreso que me devolvio mysql al crear el egreso, esta estuvo dificil de entender
             egresos.append(egreso)
         return egresos
     except Exception as error:

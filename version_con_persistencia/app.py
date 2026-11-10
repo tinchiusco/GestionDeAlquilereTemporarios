@@ -1,7 +1,7 @@
 import os
 import sys
 
-# Con esto parte aseguro que no se me mezclen los imports de otras carpetas, y que siempre tome los de la carpeta actual (version_con_persistencia)
+# Con esto parte aseguro que no se me mezclen los imports de otras carpetas, y que siempre tome los de la carpeta actual (version con persistencia)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from negocio import propietarioNegocio

@@ -2,7 +2,7 @@ from datos.conexion import obtenerConexion
 from clases.estadia import Estadia
 
 
-# Guardo una estadia nueva en MySQL vinculada al id_propiedad
+# Guardo una estadia nueva en mysql vinculada al id_propiedad
 def insertarEstadia(estadia: Estadia):
     try:
         conexion = obtenerConexion()
@@ -29,7 +29,7 @@ def insertarEstadia(estadia: Estadia):
         return None
 
 
-# Traigo todas las estadias de una propiedad desde MySQL para poder armar la liquidacion
+# Traigo todas las estadias de una propiedad desde mysql para poder armar la liquidacion
 def obtenerEstadiasPorPropiedad(propiedad):
     try:
         conexion = obtenerConexion()
@@ -44,7 +44,7 @@ def obtenerEstadiasPorPropiedad(propiedad):
 
         estadias = []
         for fila in filas:
-            # Convierto la fecha DATE de MySQL a texto con str() y el DECIMAL a numero con float()
+            # Convierto la fecha DATE de mysql a texto con str() y el DECIMAL a numero con float()
             estadia = Estadia(str(fila[1]), str(fila[2]), float(fila[3]), fila[4], propiedad)
             estadia.setId(fila[0])
             estadias.append(estadia)

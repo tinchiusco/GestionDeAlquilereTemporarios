@@ -3,7 +3,7 @@ from clases.propietario import Propietario
 from clases.propiedad import Propiedad
 
 
-# Guardo un propietario nuevo en MySQL y, si eligio una propiedad, le vinculo su id_propietario
+# Guardo un propietario nuevo en mysql y, si eligio una propiedad, le vinculo su id_propietario
 def insertarPropietario(propietario: Propietario):
     try:
         conexion = obtenerConexion()
@@ -19,7 +19,7 @@ def insertarPropietario(propietario: Propietario):
         )
 
         cursor.execute(sql, valores)
-        idGenerado = cursor.lastrowid  # Traigo el id_propietario autoincremental que le dio MySQL
+        idGenerado = cursor.lastrowid  # Traigo el id_propietario autoincremental que le dio mysql
 
         # Si le asigne propiedades, actualizo el id_propietario en la tabla propiedades
         for prop in propietario.getPropiedades():
@@ -29,7 +29,7 @@ def insertarPropietario(propietario: Propietario):
                     (idGenerado, prop.getId())
                 )
 
-        conexion.commit()  # Guardo los cambios en MySQL
+        conexion.commit()  # Guardo los cambios en mysql
 
         cursor.close()
         conexion.close()
@@ -39,7 +39,7 @@ def insertarPropietario(propietario: Propietario):
         return None
 
 
-# Traigo un propietario de MySQL buscando por su DNI junto con sus propiedades asignadas
+# Traigo un propietario de mysql buscando por su DNI junto con sus propiedades asignadas
 def buscarPropietarioPorDni(dni):
     try:
         conexion = obtenerConexion()
@@ -53,7 +53,7 @@ def buscarPropietarioPorDni(dni):
             propietario = Propietario(fila[1], fila[2], fila[3], fila[4], fila[5])
             propietario.setId(fila[0])
 
-            # Traigo las propiedades que pertenecen a este propietario desde MySQL
+            # Traigo las propiedades que pertenecen a este propietario desde mysql
             cursor.execute(
                 "SELECT id_propiedad, nombre, direccion, tipo, observaciones FROM propiedades WHERE id_propietario = %s",
                 (propietario.getId(),)
@@ -78,7 +78,7 @@ def buscarPropietarioPorDni(dni):
         return None
 
 
-# Actualizo los datos del propietario en MySQL y sus propiedades asociadas
+# Actualizo los datos del propietario en mysql y sus propiedades asociadas
 def actualizarPropietario(propietario: Propietario):
     try:
         conexion = obtenerConexion()
@@ -113,7 +113,7 @@ def actualizarPropietario(propietario: Propietario):
         print(f"Error al actualizar propietario en MySQL: {error}")
 
 
-# Elimino el propietario de MySQL buscando por su DNI
+# Elimino el propietario de mysql buscando por su DNI
 def eliminarPropietarioPorDni(dni):
     try:
         conexion = obtenerConexion()

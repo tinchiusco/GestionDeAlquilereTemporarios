@@ -15,7 +15,7 @@ def obtenerDatos(propietario: Propietario):
     )
 
 
-# Valido los datos del propietario, verifico que no este repetido el DNI y lo guardo en MySQL
+# Valido los datos del propietario, verifico que no este repetido el DNI y lo guardo en mysql
 def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
     if not nombre or not nombre.strip() or not apellido or not apellido.strip():
         return None
@@ -26,7 +26,7 @@ def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
     if not validacionNegocio.esEmailValido(email):
         return None
 
-    # Me fijo si ya existe un propietario con ese DNI en MySQL
+    # Me fijo si ya existe un propietario con ese DNI en mysql
     if propietarioDatos.buscarPropietarioPorDni(dni.strip()) is not None:
         return None
 
@@ -36,14 +36,14 @@ def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
     return propietario
 
 
-# Traigo un propietario desde MySQL buscandolo por su DNI
+# Traigo un propietario desde mysql buscandolo por su DNI
 def buscarPropietarioPorDni(dni):
     if not validacionNegocio.esDniValido(dni):
         return None
     return propietarioDatos.buscarPropietarioPorDni(dni.strip())
 
 
-# Actualizo los datos del propietario en el objeto y guardo los cambios en MySQL
+# Actualizo los datos del propietario en el objeto y guardo los cambios en mysql
 def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, telefono=None, email=None, dni=None, propiedades=None):
     if dni is not None and not validacionNegocio.esDniValido(dni):
         return False
@@ -69,7 +69,7 @@ def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, 
     return True
 
 
-# Elimino un propietario de MySQL pasandole su DNI
+# Elimino un propietario de mysql pasandole su DNI
 def eliminarPropietario(dni):
     if not validacionNegocio.esDniValido(dni):
         return False

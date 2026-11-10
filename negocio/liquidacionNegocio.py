@@ -4,7 +4,7 @@ from negocio import egresoNegocio
 from negocio import validacionNegocio
 
 
-# Traigo las estadias y los egresos de la propiedad desde MySQL y filtro solo los que entran en el rango de fechas
+# Traigo las estadias y los egresos de la propiedad desde mysql y filtro solo los que entran en el rango de fechas
 def crearLiquidacion(propiedad, fechaDesde, fechaHasta):
     if propiedad is None or not validacionNegocio.esRangoFechasValido(fechaDesde, fechaHasta):
         return None

@@ -26,7 +26,7 @@ if len(propiedadNegocio.obtenerPropiedades()) == 0:
     estadiaNegocio.crearEstadia("2026-01-15", "2026-01-20", 350, "Booking", propiedades[0])
     estadiaNegocio.crearEstadia("2026-01-10", "2026-01-18", 400, "Airbnb", propiedades[1])
 
-    # Cargo egresos iniciales en pesos (crearEgreso los pasa a USD antes de guardar en MySQL)
+    # Cargo egresos iniciales en pesos (crearEgreso los pasa a USD antes de guardar en mysql)
     egresoNegocio.crearEgreso("2026-01-16", 40000, "Arreglo de plomería", propiedades[0], cotizacionActual)
     egresoNegocio.crearEgreso("2026-01-18", 20000, "Cambio de cerradura", propiedades[1], cotizacionActual)
 

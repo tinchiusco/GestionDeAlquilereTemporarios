@@ -12,7 +12,7 @@ def obtenerDatos(estadia: Estadia):
     )
 
 
-# Valido las fechas y el monto en USD, creo la estadia y la guardo en MySQL
+# Valido las fechas y el monto en USD, creo la estadia y la guardo en mysql
 def crearEstadia(fecha_inicio, fecha_fin, monto_total, plataforma, propiedad):
     if not validacionNegocio.esRangoFechasValido(fecha_inicio, fecha_fin):
         return None
@@ -29,6 +29,6 @@ def crearEstadia(fecha_inicio, fecha_fin, monto_total, plataforma, propiedad):
     return estadia
 
 
-# Traigo todas las estadias asociadas a una propiedad desde MySQL
+# Traigo todas las estadias asociadas a una propiedad desde mysql
 def obtenerEstadiasPorPropiedad(propiedad):
     return estadiaDatos.obtenerEstadiasPorPropiedad(propiedad)
