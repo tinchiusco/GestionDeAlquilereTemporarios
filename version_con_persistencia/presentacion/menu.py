@@ -14,7 +14,7 @@ def menuPrincipal(cotizacionActual):
             opcionMenuPpal = int(input("Ingrese una opción: ").strip())
         except ValueError:
             print("Error: Debe ingresar un número válido.")
-            continue
+            continue 
 
         if opcionMenuPpal == 1:
             menuPropietarios()

@@ -1,71 +1,36 @@
-# Gestión de Alquileres Temporarios (GAT)
+# Gestion de Alquileres Temporarios (GAT)
 
-Sistema desarrollado en **Python** para administrar propietarios, propiedades, estadías (en USD), egresos (cargados en ARS y convertidos automáticamente a USD usando la cotización oficial en vivo de DolarAPI) y liquidaciones de ganancias.
+Este proyecto es un sistema desarrollado en Python para administrar propietarios, propiedades en alquiler temporario, estadias en dolares (USD), egresos en pesos argentinos (que se convierten automaticamente a USD consultando la cotizacion oficial en DolarAPI) y el calculo de liquidaciones para cada propiedad.
 
----
+## Como funciona la aplicacion
 
-## ⚙️ ¿Cómo funciona la aplicación?
+El programa esta dividido en cuatro capas para que el codigo sea ordenado y cada archivo tenga su propia responsabilidad:
 
-El proyecto está organizado en **capas** para separar las responsabilidades y que cada parte del código tenga una única tarea:
+* **Presentacion**: Es la parte que interactua con el usuario. Pide los datos y muestra los resultados (por consola en menu.py o por ventana grafica en interfazVisual.py).
+* **Negocio**: Contiene la logica del sistema. Se encarga de validar que los datos ingresados sean correctos, convertir los gastos de pesos a dolares, crear los objetos y hacer las cuentas de las liquidaciones.
+* **Clases**: Contiene los moldes de los objetos del sistema (Propietario, Propiedad, Estadia, Egreso, Liquidacion y Cotizacion) con sus atributos, getters y setters.
+* **Datos**: Es la unica capa que se conecta con la base de datos MySQL. Ejecuta las consultas SQL para guardar, buscar, modificar o borrar registros.
 
-1. **Capa de Presentación (`presentacion/`)**: Es la pantalla con la que interactúa el usuario (por consola en `menu.py` o por ventana gráfica con Flet en `interfazVisual.py`). Solo pide datos y muestra resultados.
-2. **Capa de Negocio (`negocio/`)**: Es el "cerebro" del sistema. Valida que los datos sean coherentes (`validacionNegocio.py`), convierte monedas (`cotizacionNegocio.py`), arma los objetos y calcula las liquidaciones (`liquidacionNegocio.py`).
-3. **Clases / Modelo (`clases/`)**: Define los moldes de los objetos del sistema (`Propietario`, `Propiedad`, `Estadia`, `Egreso`, `Liquidacion`, `Cotizacion`).
-4. **Capa de Datos (`datos/`)**: Es la única capa que habla con la base de datos **MySQL (`gat_db`)**. Ejecuta las consultas SQL (`INSERT`, `SELECT`, `UPDATE`, `DELETE`) y transforma las filas de las tablas en objetos de Python.
+### Versiones del proyecto
 
-### Versiones incluidas en el repositorio
-* **`version_hardcodeada_memoria/`**: Primera versión por consola donde los datos viven temporalmente en listas en memoria RAM.
-* **`version_con_persistencia/`**: Segunda versión por consola conectada a MySQL (`gat_db`).
-* **Carpeta raíz (`/`)**: Versión final con **Interfaz Gráfica (Flet)** conectada a MySQL (`gat_db`).
+* **version_hardcodeada_memoria**: Version inicial por consola donde los datos se guardan temporalmente en listas en memoria mientras el programa esta abierto.
+* **version_con_persistencia**: Version por consola conectada a la base de datos MySQL para que los datos queden guardados de forma permanente.
+* **Proyecto principal (raiz)**: Version con interfaz grafica hecha en Flet y conectada a la misma base de datos MySQL.
 
----
+## Ejemplo del recorrido de un Propietario en la version con persistencia (Consola)
 
-## 🔄 Ejemplo 1: Recorrido de los datos de un `Propietario` en la Versión con Persistencia (Consola)
+Cuando se crea un propietario nuevo desde el menu por consola y se le asigna una propiedad, los datos hacen el siguiente recorrido:
 
-Imaginemos que queremos crear al propietario **"Juan Pérez"** y asignarle la propiedad **"Casa de Playa"** desde la consola (`version_con_persistencia/app.py`):
+* **1. Ingreso de datos en la capa de presentacion (menu.py)**: El programa le pide al usuario que escriba por teclado el nombre, apellido, telefono, email y DNI mediante input, y le pide que elija un numero de la lista de propiedades disponibles. Esos datos se envian a la funcion crearPropietario de la capa de negocio.
+* **2. Validacion y armado del objeto en la capa de negocio (propietarioNegocio.py)**: Antes de guardar nada, el sistema verifica con validacionNegocio.py que el DNI tenga entre 7 y 9 numeros, que el telefono sea numerico y que el email sea valido. Tambien comprueba que no exista otro propietario con el mismo DNI. Si todo esta bien, crea el objeto Propietario en memoria con sus datos y su propiedad asignada, y se lo pasa a la capa de datos.
+* **3. Guardado en MySQL en la capa de datos (propietarioDatos.py)**: La funcion insertarPropietario abre la conexion con MySQL y hace un INSERT en la tabla propietarios. Luego toma el ID que le asigno la base de datos y hace un UPDATE en la tabla propiedades para vincularle ese id_propietario a la propiedad elegida.
+* **4. Muestra del resultado en consola**: La capa de negocio recibe el ID generado, se lo asigna al objeto Propietario y se lo devuelve al menu, que muestra por pantalla los datos cargados usando print.
 
-1. **Entrada por Consola (`presentacion/menu.py`)**:
-   * En `menuPropietarios()`, el programa le pide al usuario los datos mediante `input()` (nombre, apellido, teléfono, email, DNI) y le muestra la lista numerada de propiedades disponibles traídas de MySQL.
-   * El usuario escribe los datos y elige el número `1` ("Casa de Playa").
-   * El menú llama a la capa de negocio:
-     `propietarioNegocio.crearPropietario(nombre, apellido, telefono, email, dni, [propiedadSeleccionada])`.
+## Ejemplo del mismo objeto Propietario en la version con interfaz grafica
 
-2. **Validación y Creación del Objeto (`negocio/propietarioNegocio.py`)**:
-   * Antes de tocar la base de datos, consulta a `validacionNegocio.py` para verificar que el DNI tenga entre 7 y 9 dígitos numéricos, que el teléfono tenga solo números y que el email tenga formato válido (`@` y `.`).
-   * Verifica con `propietarioDatos.buscarPropietarioPorDni(dni)` que ese DNI no esté repetido en MySQL.
-   * Si todo es válido, instancia el objeto en memoria:
-     `propietario = Propietario(nombre, apellido, telefono, email, dni, propiedades)`.
-   * Envía ese objeto `propietario` a la capa de datos: `propietarioDatos.insertarPropietario(propietario)`.
+En la version con interfaz grafica, el objeto Propietario, las validaciones de negocio y el guardado en MySQL funcionan exactamente igual que en la version por consola. Lo unico que cambia es la capa de presentacion:
 
-3. **Guardado en MySQL (`datos/propietarioDatos.py`)**:
-   * Abre la conexión con MySQL mediante `obtenerConexion()`.
-   * Ejecuta `INSERT INTO propietarios (nombre, apellido, telefono, email, dni) VALUES (...)`.
-   * Captura el ID autoincremental que le asignó MySQL con `idGenerado = cursor.lastrowid`.
-   * Recorre las propiedades asignadas dentro del objeto (`propietario.getPropiedades()`) y vincula la clave foránea en la tabla `propiedades`:
-     `UPDATE propiedades SET id_propietario = %s WHERE id_propiedad = %s`.
-   * Confirma los cambios con `conexion.commit()` y devuelve `idGenerado`.
-
-4. **Respuesta al Usuario (`negocio/` -> `presentacion/menu.py`)**:
-   * `propietarioNegocio` le guarda el ID al objeto (`propietario.setId(idGenerado)`) y se lo devuelve al menú.
-   * El menú llama a `propietarioNegocio.obtenerDatos(propietario)` y muestra por consola con `print()` el resumen del propietario creado con su propiedad asignada.
-
----
-
-## 🖥️ Ejemplo 2: Cómo funciona el mismo objeto `Propietario` en la Versión con Interfaz Gráfica (Flet)
-
-En la versión visual (`app.py` en la raíz), **el objeto `Propietario`, la capa de negocio (`propietarioNegocio.py`) y la capa de datos (`propietarioDatos.py`) funcionan exactamente igual sin cambiar una sola línea**. Lo único que cambia es cómo entra y sale la información en la capa de presentación (`presentacion/interfazVisual.py`):
-
-1. **Entrada Visual (`presentacion/interfazVisual.py`)**:
-   * En lugar de usar `input()` en una pantalla negra, el usuario escribe los datos en cajas de texto gráficas (`ft.TextField`: `propNombre`, `propApellido`, `propTelefono`, `propEmail`, `propDni`) y elige la propiedad desde un menú desplegable (`ft.Dropdown`: `propPropiedadDropdown`).
-   * Cuando el usuario hace clic en el botón **"Crear Propietario"**, se dispara la función `eventoCrearPropietario(e)`.
-
-2. **Llamada al mismo Backend (`negocio/propietarioNegocio.py`)**:
-   * La función del botón toma los valores escritos en las cajas de texto (`.value`) y llama exactamente a la misma función de negocio:
-     `propietarioNegocio.crearPropietario(propNombre.value, propApellido.value, propTelefono.value, propEmail.value, propDni.value, propiedadesAsignadas)`.
-
-3. **Mismo Objeto y Misma Persistencia (`clases/` y `datos/`)**:
-   * `propietarioNegocio` valida los datos con `validacionNegocio.py`, crea el mismo objeto `Propietario(...)` y lo envía a `propietarioDatos.insertarPropietario(propietario)`, que ejecuta el mismo `INSERT` en `propietarios` y el mismo `UPDATE` en `propiedades` dentro de MySQL.
-
-4. **Respuesta Visual en Pantalla (`presentacion/interfazVisual.py`)**:
-   * Si `crearPropietario` devuelve `None` (por ejemplo, si el DNI tenía letras), la interfaz muestra un cartel rojo de alerta (`mostrarMensaje(..., esError=True)`).
-   * Si devuelve el objeto `Propietario` creado, la interfaz limpia las cajas de texto y muestra un cartel verde en pantalla con `propietarioNegocio.obtenerDatos(propietario)`.
+* **1. Ingreso de datos en la ventana grafica (interfazVisual.py)**: En lugar de escribir en la consola, el usuario completa los campos de texto en la ventana (Nombre, Apellido, Telefono, Email y DNI), selecciona la propiedad en una lista desplegable y presiona el boton Crear Propietario.
+* **2. Llamada a la misma capa de negocio (propietarioNegocio.py)**: El evento del boton toma los valores escritos en las cajas de texto y llama a la misma funcion crearPropietario que usa la consola.
+* **3. Mismo objeto y misma base de datos (clases y datos)**: La capa de negocio valida los datos, crea el mismo objeto Propietario y llama a propietarioDatos.py para hacer el INSERT en la tabla propietarios y el UPDATE en la tabla propiedades dentro de MySQL.
+* **4. Respuesta visual en la ventana**: Si algun dato era incorrecto (por ejemplo un DNI con letras), la funcion devuelve None y la ventana muestra un aviso en color rojo. Si se guardo bien, limpia los campos de texto y muestra un mensaje en color verde con los datos del objeto Propietario creado.
