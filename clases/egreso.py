@@ -1,5 +1,4 @@
 class Egreso:
-    # Armo el egreso (gasto) con su fecha, monto ya pasado a USD, descripcion y propiedad
     def __init__(self, fecha, monto, descripcion, propiedad):
         self.__id = None
         self.__fecha = fecha

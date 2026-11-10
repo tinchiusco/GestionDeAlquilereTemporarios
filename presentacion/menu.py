@@ -8,7 +8,11 @@ from negocio import liquidacionNegocio
 # Menu por consola para crear, actualizar o eliminar propietarios
 def menuPropietarios():
     print("------Menu Propietarios------")
-    opcionPropietario = int(input("1. Crear Propietario \n2. Actualizar Propietario \n3. Eliminar Propietario \n4. Volver al menu principal\nIngrese una opción: ").strip())
+    try:
+        opcionPropietario = int(input("1. Crear Propietario \n2. Actualizar Propietario \n3. Eliminar Propietario \n4. Volver al menu principal\nIngrese una opción: ").strip())
+    except ValueError:
+        print("Error: Debe ingresar un número válido.")
+        return
 
     # Traigo todas las propiedades desde mysql
     propiedades = propiedadNegocio.obtenerPropiedades()
@@ -20,15 +24,28 @@ def menuPropietarios():
         email = input("Ingrese el email del propietario: ").strip()
         dni = input("Ingrese el DNI del propietario: ").strip()
 
-        print("\n--------------------Propiedades disponibles:---------------------")
-        for i, propiedad in enumerate(propiedades):
-            print(f"{i + 1}. {propiedad}")
-        eleccion = int(input("Seleccione la propiedad que desea asignar al propietario (ingrese el número correspondiente): ").strip())
-        propiedadSeleccionada = propiedades[eleccion - 1]
-        propiedadesSeleccionadas = [propiedadSeleccionada]
+        propiedadesSeleccionadas = []
+        if len(propiedades) > 0:
+            print("\n--------------------Propiedades disponibles:---------------------")
+            for i, propiedad in enumerate(propiedades):
+                print(f"{i + 1}. {propiedad}")
+            try:
+                eleccion = int(input("Seleccione la propiedad que desea asignar al propietario (0 para ninguna): ").strip() or 0)
+                if 1 <= eleccion <= len(propiedades):
+                    propiedadesSeleccionadas.append(propiedades[eleccion - 1])
+                elif eleccion != 0:
+                    print("Error: Número de propiedad fuera de rango.")
+                    return
+            except ValueError:
+                print("Error: Debe ingresar un número válido para la propiedad.")
+                return
 
         propietario = propietarioNegocio.crearPropietario(nombre, apellido, telefono, email, dni, propiedadesSeleccionadas)
-        print(propietarioNegocio.obtenerDatos(propietario))
+        if propietario is None:
+            print("\nError: Datos inválidos (verifique DNI de 7-9 dígitos, teléfono numérico, email con '@' y '.') o el DNI ya existe.")
+        else:
+            print("\nPropietario creado correctamente:")
+            print(propietarioNegocio.obtenerDatos(propietario))
 
     elif opcionPropietario == 2:
         print("\n------ Actualizar Propietario ------")
@@ -37,15 +54,17 @@ def menuPropietarios():
         propietario = propietarioNegocio.buscarPropietarioPorDni(dniBuscar)
 
         if propietario is None:
-            print("\n No existe un propietario con ese DNI.")
+            print("\nNo existe un propietario con ese DNI (o el formato de DNI es inválido).")
             return
 
-        print("\n Propietario encontrado:")
+        propiedadesActualesTexto = ", ".join([p.getNombre() for p in propietario.getPropiedades()]) if propietario.getPropiedades() else "Sin asignar"
+        print("\nPropietario encontrado:")
         print(f"Nombre: {propietario.getNombre()}")
         print(f"Apellido: {propietario.getApellido()}")
         print(f"Telefono: {propietario.getTelefono()}")
         print(f"Email: {propietario.getEmail()}")
         print(f"DNI: {propietario.getDni()}")
+        print(f"Propiedades asignadas: {propiedadesActualesTexto}")
 
         print("\nIngrese los nuevos datos.")
         print("(Presione ENTER para mantener el valor actual)\n")
@@ -60,18 +79,30 @@ def menuPropietarios():
         for i, propiedad in enumerate(propiedades):
             print(f"{i + 1}. {propiedad}")
 
-        eleccion = int(input("\nSeleccione una propiedad (0 para mantener la actual): ").strip() or 0)
+        try:
+            eleccion = int(input("\nSeleccione una propiedad para asignarle (0 para mantener las actuales): ").strip() or 0)
+        except ValueError:
+            print("Error: Debe ingresar un número válido.")
+            return
 
         propiedadesActualizadas = propietario.getPropiedades()
         if eleccion != 0:
-            propiedadSeleccionada = propiedades[eleccion - 1]
-            propiedadesActualizadas.append(propiedadSeleccionada)
+            if 1 <= eleccion <= len(propiedades):
+                propiedadSeleccionada = propiedades[eleccion - 1]
+                # Evito duplicar en la lista si ya la tenia asignada
+                if all(p.getId() != propiedadSeleccionada.getId() for p in propiedadesActualizadas):
+                    propiedadesActualizadas.append(propiedadSeleccionada)
+            else:
+                print("Error: Número de propiedad fuera de rango.")
+                return
 
-        propietarioNegocio.actualizarPropietario(propietario, nombre, apellido, telefono, email, dni, propiedadesActualizadas)
-
-        print("\n Propietario actualizado correctamente.")
-        print("\nDatos actualizados:")
-        print(propietarioNegocio.obtenerDatos(propietario))
+        actualizado = propietarioNegocio.actualizarPropietario(propietario, nombre, apellido, telefono, email, dni, propiedadesActualizadas)
+        if actualizado:
+            print("\nPropietario actualizado correctamente.")
+            print("\nDatos actualizados:")
+            print(propietarioNegocio.obtenerDatos(propietario))
+        else:
+            print("\nError: Datos inválidos (verifique DNI de 7-9 dígitos, teléfono numérico y email válido).")
 
     elif opcionPropietario == 3:
         print("\n------ Eliminar Propietario ------")
@@ -91,7 +122,11 @@ def menuPropietarios():
 # Menu por consola para gestionar propiedades y registrar estadias o egresos
 def menuPropiedades(cotizacionActual):
     print("------Menu Propiedades------")
-    opcionPropiedad = int(input("1. Crear Propiedad \n2. Actualizar Propiedad \n3. Eliminar Propiedad \n4. Registrar Estadía \n5. Registrar Egreso \n6. Volver al menu principal\nIngrese una opción: ").strip())
+    try:
+        opcionPropiedad = int(input("1. Crear Propiedad \n2. Actualizar Propiedad \n3. Eliminar Propiedad \n4. Registrar Estadía \n5. Registrar Egreso \n6. Volver al menu principal\nIngrese una opción: ").strip())
+    except ValueError:
+        print("Error: Debe ingresar un número válido.")
+        return
 
     # Traigo todas las propiedades desde mysql
     propiedades = propiedadNegocio.obtenerPropiedades()
@@ -103,7 +138,11 @@ def menuPropiedades(cotizacionActual):
         descripcion = input("Ingrese una descripción de la propiedad: ").strip()
 
         propiedad = propiedadNegocio.crearPropiedad(nombre, direccion, tipo, descripcion)
-        print(propiedadNegocio.obtenerPropiedad(propiedad))
+        if propiedad is None:
+            print("\nError: El nombre y la dirección son obligatorios y el nombre no puede estar repetido.")
+        else:
+            print("\nPropiedad creada correctamente:")
+            print(propiedadNegocio.obtenerPropiedad(propiedad))
 
     elif opcionPropiedad == 2:
         nombreActualizar = input("Ingrese el nombre de la propiedad que desea actualizar: ").strip()
@@ -132,34 +171,60 @@ def menuPropiedades(cotizacionActual):
 
     elif opcionPropiedad == 4:
         print("\n------ Registrar Estadía ------")
+        if len(propiedades) == 0:
+            print("No hay propiedades cargadas.")
+            return
         for i, propiedad in enumerate(propiedades):
             print(f"{i + 1}. {propiedad}")
-        eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
-        propiedadSeleccionada = propiedades[eleccion - 1]
+        try:
+            eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
+            if not (1 <= eleccion <= len(propiedades)):
+                print("Error: Número de propiedad fuera de rango.")
+                return
+            propiedadSeleccionada = propiedades[eleccion - 1]
+        except ValueError:
+            print("Error: Debe ingresar un número válido.")
+            return
 
         fechaInicio = input("Fecha de ingreso (AAAA-MM-DD): ").strip()
         fechaFin = input("Fecha de salida (AAAA-MM-DD): ").strip()
-        montoTotal = float(input("Monto total de la estadía (en USD): ").strip())
+        montoTotal = input("Monto total de la estadía (en USD): ").strip()
         plataforma = input("Plataforma (Airbnb, Booking, etc.): ").strip()
 
         estadia = estadiaNegocio.crearEstadia(fechaInicio, fechaFin, montoTotal, plataforma, propiedadSeleccionada)
-        print("\nEstadía registrada correctamente:")
-        print(estadiaNegocio.obtenerDatos(estadia))
+        if estadia is None:
+            print("\nError: Verifique que las fechas sean reales (AAAA-MM-DD), la salida no sea anterior al ingreso y el monto sea numérico mayor a 0.")
+        else:
+            print("\nEstadía registrada correctamente:")
+            print(estadiaNegocio.obtenerDatos(estadia))
 
     elif opcionPropiedad == 5:
         print("\n------ Registrar Egreso ------")
+        if len(propiedades) == 0:
+            print("No hay propiedades cargadas.")
+            return
         for i, propiedad in enumerate(propiedades):
             print(f"{i + 1}. {propiedad}")
-        eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
-        propiedadSeleccionada = propiedades[eleccion - 1]
+        try:
+            eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
+            if not (1 <= eleccion <= len(propiedades)):
+                print("Error: Número de propiedad fuera de rango.")
+                return
+            propiedadSeleccionada = propiedades[eleccion - 1]
+        except ValueError:
+            print("Error: Debe ingresar un número válido.")
+            return
 
         fecha = input("Fecha del gasto (AAAA-MM-DD): ").strip()
-        montoPesos = float(input("Monto del gasto (en Pesos ARS): ").strip())
+        montoPesos = input("Monto del gasto (en Pesos ARS): ").strip()
         descripcion = input("Descripción del gasto (ej. Plomería, Electricista): ").strip()
 
         egreso = egresoNegocio.crearEgreso(fecha, montoPesos, descripcion, propiedadSeleccionada, cotizacionActual)
-        print(f"\nEgreso registrado y convertido a USD (Cotización: ${cotizacionActual.getValor()}):")
-        print(egresoNegocio.obtenerDatos(egreso))
+        if egreso is None:
+            print("\nError: Verifique que la fecha sea real (AAAA-MM-DD), el monto sea numérico mayor a 0 y tenga descripción.")
+        else:
+            print(f"\nEgreso registrado y convertido a USD (Cotización: ${cotizacionActual.getValor()}):")
+            print(egresoNegocio.obtenerDatos(egreso))
 
     elif opcionPropiedad == 6:
         return
@@ -173,16 +238,30 @@ def menuLiquidaciones():
     print("\n------ Consultar Liquidación ------")
     # Traigo todas las propiedades para elegir cual liquidar
     propiedades = propiedadNegocio.obtenerPropiedades()
+    if len(propiedades) == 0:
+        print("No hay propiedades cargadas.")
+        return
     for i, propiedad in enumerate(propiedades):
         print(f"{i + 1}. {propiedad}")
 
-    eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
-    propiedadSeleccionada = propiedades[eleccion - 1]
+    try:
+        eleccion = int(input("Seleccione la propiedad (ingrese el número): ").strip())
+        if not (1 <= eleccion <= len(propiedades)):
+            print("Error: Número de propiedad fuera de rango.")
+            return
+        propiedadSeleccionada = propiedades[eleccion - 1]
+    except ValueError:
+        print("Error: Debe ingresar un número válido.")
+        return
 
     fechaDesde = input("Ingrese fecha desde (AAAA-MM-DD, ej. 2026-01-01): ").strip()
     fechaHasta = input("Ingrese fecha hasta (AAAA-MM-DD, ej. 2026-01-31): ").strip()
 
     liquidacion = liquidacionNegocio.crearLiquidacion(propiedadSeleccionada, fechaDesde, fechaHasta)
+    if liquidacion is None:
+        print("\nError: Verifique que las fechas sean reales (AAAA-MM-DD) y que la fecha hasta no sea anterior a la fecha desde.")
+        return
+
     resumen = liquidacionNegocio.obtenerResumen(liquidacion)
 
     print("\n========== RESUMEN DE LIQUIDACIÓN ==========")
@@ -204,7 +283,11 @@ def menuLiquidaciones():
 def menuPrincipal(cotizacionActual):
     while True:
         print("------Sistema GAT------ \nMenu de opciones:\n1. Menu Propietarios \n2. Menu Propiedades \n3. Traer liquidaciones \n4. Salir ")
-        opcionMenuPpal = int(input("Ingrese una opción: ").strip())
+        try:
+            opcionMenuPpal = int(input("Ingrese una opción: ").strip())
+        except ValueError:
+            print("Error: Debe ingresar un número válido.")
+            continue
 
         if opcionMenuPpal == 1:
             menuPropietarios()

@@ -1,49 +1,76 @@
 from clases.propietario import Propietario
 from datos import propietarioDatos
+from negocio import validacionNegocio
 
 
+# Traigo los datos del propietario formateados en un texto prolijo para mostrar en pantalla
 def obtenerDatos(propietario: Propietario):
-    return {
-        "id": propietario.getId(),
-        "nombre": propietario.getNombre(),
-        "apellido": propietario.getApellido(),
-        "telefono": propietario.getTelefono(),
-        "email": propietario.getEmail(),
-        "dni": propietario.getDni(),
-        "propiedades": [str(propiedad) for propiedad in propietario.getPropiedades()]
-    }
+    propiedadesTexto = ", ".join([p.getNombre() for p in propietario.getPropiedades()]) if propietario.getPropiedades() else "Sin asignar"
+    return (
+        f"{propietario.getNombre()} {propietario.getApellido()} | "
+        f"DNI: {propietario.getDni()} | "
+        f"Tel: {propietario.getTelefono()} | "
+        f"Email: {propietario.getEmail()} | "
+        f"Propiedades: {propiedadesTexto}"
+    )
 
 
+# Valido los datos del propietario, verifico que no este repetido el DNI y lo guardo en mysql
 def crearPropietario(nombre, apellido, telefono, email, dni, propiedades=None):
-    propietario = Propietario(nombre, apellido, telefono, email, dni, propiedades)
-    idGenerado = propietarioDatos.insertarPropietario(propietario)  # guardado en MySql
+    if not nombre or not nombre.strip() or not apellido or not apellido.strip():
+        return None
+    if not validacionNegocio.esDniValido(dni):
+        return None
+    if not validacionNegocio.esTelefonoValido(telefono):
+        return None
+    if not validacionNegocio.esEmailValido(email):
+        return None
+
+    # Me fijo si ya existe un propietario con ese DNI en mysql
+    if propietarioDatos.buscarPropietarioPorDni(dni.strip()) is not None:
+        return None
+
+    propietario = Propietario(nombre.strip(), apellido.strip(), telefono.strip(), email.strip(), dni.strip(), propiedades)
+    idGenerado = propietarioDatos.insertarPropietario(propietario)
     propietario.setId(idGenerado)
     return propietario
 
 
+# Traigo un propietario desde mysql buscandolo por su DNI
 def buscarPropietarioPorDni(dni):
-    # sin recorrerlo, solo lo busco en MySQL y devuelvo el objeto propietario
-    return propietarioDatos.buscarPropietarioPorDni(dni)
+    if not validacionNegocio.esDniValido(dni):
+        return None
+    return propietarioDatos.buscarPropietarioPorDni(dni.strip())
 
 
+# Actualizo los datos del propietario en el objeto y guardo los cambios en mysql
 def actualizarPropietario(propietario: Propietario, nombre=None, apellido=None, telefono=None, email=None, dni=None, propiedades=None):
+    if dni is not None and not validacionNegocio.esDniValido(dni):
+        return False
+    if telefono is not None and not validacionNegocio.esTelefonoValido(telefono):
+        return False
+    if email is not None and not validacionNegocio.esEmailValido(email):
+        return False
+
     if nombre is not None:
-        propietario.setNombre(nombre)
+        propietario.setNombre(nombre.strip())
     if apellido is not None:
-        propietario.setApellido(apellido)
+        propietario.setApellido(apellido.strip())
     if telefono is not None:
-        propietario.setTelefono(telefono)
+        propietario.setTelefono(telefono.strip())
     if email is not None:
-        propietario.setEmail(email)
+        propietario.setEmail(email.strip())
     if dni is not None:
-        propietario.setDni(dni)
+        propietario.setDni(dni.strip())
     if propiedades is not None:
         propietario.setPropiedades(propiedades)
 
-    # Guardamos los datos actualizados en MySQL
     propietarioDatos.actualizarPropietario(propietario)
+    return True
 
 
+# Elimino un propietario de mysql pasandole su DNI
 def eliminarPropietario(dni):
-    # Borramos directamente en MySQL por dni
-    return propietarioDatos.eliminarPropietarioPorDni(dni)
+    if not validacionNegocio.esDniValido(dni):
+        return False
+    return propietarioDatos.eliminarPropietarioPorDni(dni.strip())
