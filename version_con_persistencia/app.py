@@ -9,6 +9,7 @@ from negocio import propiedadNegocio
 from negocio import estadiaNegocio
 from negocio import egresoNegocio
 from negocio import cotizacionNegocio
+from negocio import liquidacionNegocio
 from presentacion import menu
 
 # Guardo la cotizacion antes de cualquier operacion, en caso de no funcionar la API la agrego manualmente
@@ -35,6 +36,34 @@ if len(propiedadNegocio.obtenerPropiedades()) == 0:
     # Egresos iniciales (se cargan en Pesos ARS y crearEgreso los guarda en USD en MySQL)
     egresoNegocio.crearEgreso("2026-01-16", 40000, "Arreglo de plomería", propiedades[0], cotizacionActual)
     egresoNegocio.crearEgreso("2026-01-18", 20000, "Cambio de cerradura", propiedades[1], cotizacionActual)
+
+
+
+# 1. Crear y persistir una Propiedad en MySQL (nombre, direccion, tipo, observaciones)
+# nuevaPropiedad = propiedadNegocio.crearPropiedad("Cabaña del Bosque", "Ruta 40 Km 12", "Cabaña", "Con vista a la montaña")
+# if nuevaPropiedad is not None:
+#     print("Propiedad guardada :", propiedadNegocio.obtenerPropiedad(nuevaPropiedad))
+
+# 2. Crear y persistir un Propietario en MySQL (nombre, apellido, telefono, email, dni, lista de propiedades)
+# nuevoPropietario = propietarioNegocio.crearPropietario("Martín", "Rodríguez", "1144556677", "martin@email.com", "35667788", [nuevaPropiedad])
+# if nuevoPropietario is not None:
+#     print("Propietario guardado :", propietarioNegocio.obtenerDatos(nuevoPropietario))
+
+# 3. Crear y persistir una Estadía en MySQL (fecha_inicio, fecha_fin, monto_usd, plataforma, propiedad)
+# nuevaEstadia = estadiaNegocio.crearEstadia("2026-02-01", "2026-02-10", 600, "Airbnb", nuevaPropiedad)
+# if nuevaEstadia is not None:
+#     print("Estadía guardada:", estadiaNegocio.obtenerDatos(nuevaEstadia))
+
+# 4. Crear y persistir un Egreso en MySQL (fecha, monto_pesos_ars, descripcion, propiedad, cotizacion)
+# nuevoEgreso = egresoNegocio.crearEgreso("2026-02-05", 30000, "Reparación de calefón", nuevaPropiedad, cotizacionActual)
+# if nuevoEgreso is not None:
+#     print("Egreso guardado :", egresoNegocio.obtenerDatos(nuevoEgreso))
+
+# 5. Generar una Liquidación trayendo las estadías y egresos persistidos en MySQL (propiedad, fechaDesde, fechaHasta)
+# nuevaLiquidacion = liquidacionNegocio.crearLiquidacion(nuevaPropiedad, "2026-02-01", "2026-02-28")
+# if nuevaLiquidacion is not None:
+#     print("Resumen de Liquidación:", liquidacionNegocio.obtenerResumen(nuevaLiquidacion))
+
 
 # Inicio el menú principal desde la capa de presentación
 menu.menuPrincipal(cotizacionActual)

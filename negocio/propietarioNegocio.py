@@ -3,7 +3,7 @@ from datos import propietarioDatos
 from negocio import validacionNegocio
 
 
-# Traigo los datos del propietario formateados en un texto prolijo para mostrar en pantalla
+# Traigo los datos del propietario formateados para mostrar en pantalla
 def obtenerDatos(propietario: Propietario):
     propiedadesTexto = ", ".join([p.getNombre() for p in propietario.getPropiedades()]) if propietario.getPropiedades() else "Sin asignar"
     return (

@@ -1,7 +1,7 @@
 import os
 import sys
 
-# Asegura que Python use las carpetas (clases, negocio, presentacion) de esta versión en memoria
+# Aseguro que Python use las carpetas de esta versión
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from negocio import propietarioNegocio
@@ -14,7 +14,7 @@ from presentacion import menu
 #Guardo la cotizacion antes de cualquier operacion, en caso de funcionar la agrego manualmente
 cotizacionActual = cotizacionNegocio.cargarCotizacionApi()
 if cotizacionActual is None:
-    cotizacionActual = cotizacionNegocio.crearCotizacionManual("2026-01-01", 1000) 
+    cotizacionActual = cotizacionNegocio.crearCotizacionManual("2026-01-01", 1500) 
 
 #Hardcodeo algunos objetos de prueba
 propietarios = []  # Lista para almacenar los propietarios
